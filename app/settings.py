@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 APP_NAME = "netcorp-tycoon"
-APP_VERSION = "0.2.8"
+APP_VERSION = "0.2.9"
 APP_DISPLAY_NAME = "NetCorp Tycoon"
 
 # Repo GitHub do sprawdzania aktualizacji
