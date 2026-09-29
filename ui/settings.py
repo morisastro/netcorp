@@ -50,6 +50,20 @@ class SettingsScreen(QWidget):
         save_row.addStretch()
         layout.addLayout(save_row)
 
+        # Otwórz foldery
+        folders_row = QHBoxLayout()
+        self.btn_open_saves = QPushButton("📂  Otwórz folder zapisów")
+        self.btn_open_saves.clicked.connect(self._on_open_saves_folder)
+        folders_row.addWidget(self.btn_open_saves)
+        self.btn_open_mods = QPushButton("🧩  Otwórz folder modów")
+        self.btn_open_mods.clicked.connect(self._on_open_mods_folder)
+        folders_row.addWidget(self.btn_open_mods)
+        self.btn_open_game = QPushButton("🎮  Otwórz folder gry")
+        self.btn_open_game.clicked.connect(self._on_open_game_folder)
+        folders_row.addWidget(self.btn_open_game)
+        folders_row.addStretch()
+        layout.addLayout(folders_row)
+
         # Sekcja: aktualizacje
         up_title = QLabel("Aktualizacje")
         up_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #60a5fa; margin-top: 12px;")
@@ -153,3 +167,36 @@ class SettingsScreen(QWidget):
         from PySide6.QtCore import QUrl
         from PySide6.QtGui import QDesktopServices
         QDesktopServices.openUrl(QUrl(url))
+
+    def _open_path(self, path) -> None:
+        """Otwiera folder w explorerze (tworzy jeśli brak)."""
+        from pathlib import Path
+        import subprocess, sys
+        p = Path(path)
+        p.mkdir(parents=True, exist_ok=True)
+        if sys.platform == "win32":
+            subprocess.Popen(["explorer", str(p)])
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(p)])
+        else:
+            subprocess.Popen(["xdg-open", str(p)])
+
+    def _on_open_saves_folder(self) -> None:
+        from app.settings import save_dir
+        self._open_path(save_dir())
+
+    def _on_open_mods_folder(self) -> None:
+        from core.mods import mods_dir
+        self._open_path(mods_dir())
+
+    def _on_open_game_folder(self) -> None:
+        """Otwórz folder, w którym jest uruchomiona gra (.exe lub main.py)."""
+        import sys, os
+        from pathlib import Path
+        if getattr(sys, "frozen", False):
+            # PyInstaller — folder obok exe
+            p = Path(sys.executable).parent
+        else:
+            # Dev — katalog projektu
+            p = Path(__file__).resolve().parent.parent
+        self._open_path(p)

@@ -1,0 +1,12 @@
+{
+  "name": "Przykładowy mod — Więcej klientów",
+  "version": "1.0",
+  "author": "NetCorp",
+  "enabled": true,
+  "description": "Zmniejsza koszt pozyskania klienta z marketingu i zwiększa bazowy przyrost. Przykład modu — dostosuj wartości do swoich potrzeb.",
+  "balance": {
+    "MARKETING_COST_PER_NEW_CUSTOMER": 10.0,
+    "MARKETING_BASELINE_NEW_CUSTOMERS": 5,
+    "FAILURE_BASE_DAILY": 0.01
+  }
+}

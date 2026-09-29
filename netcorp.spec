@@ -18,6 +18,7 @@ a = Analysis(
         ('data', 'data'),
         ('LICENSE', '.'),
         ('assets', 'assets'),
+        ('mods/README.md', 'mods'),
     ],
     hiddenimports=[
         'PySide6.QtSvgWidgets',
