@@ -14,6 +14,8 @@ Gra jest **open-ended sandbox** bez sztucznego warunku wygranej — jedynym fail
 
 **Klimat:** poważny, pro-operator UI (dark, monospace, metryki, czyste tabele) + lekki flavor (memowe nazwy serwerów, zabawne tickety, komentarze klientów). Hybryda poważnego panelu z odrobiną humoru.
 
+**Język gry:** polski — cały interfejs, komunikaty, raporty dzienne, nazwy ról, opisy produktów, tickety, awarie. Kod i identyfikatory techniczne po angielsku; teksty widoczne dla gracza po polsku. Angielska lokalizacja jako opcjonalna warstwa w późniejszej fazie.
+
 **Platforma:** desktop (Windows/macOS/Linux), aplikacja instalowana, działa offline, brak DB i serwera — stan w pliku lokalnym. Licencja komercyjna (płatna). Auto-update: sprawdza najnowszą wersję na GitHub releases przy starcie i powiadamia gracza.
 
 ---
@@ -62,7 +64,7 @@ Pętla powtarza się. W późnym etapie (wiele regionów, tysiące klientów) gr
 9. **Domeny i DNS** — cennik per TLD, cykl życia domeny u klienta, DNS jako abstrakcja (działa z hostingiem).
 10. **Regiony / datacentry** — zaczynamy od 1, docelowo multi-region z osobnymi kosztami i awariami.
 11. **Reputacja** — wpływa na przyrost klientów i churn.
-12. **Save/load** — stan w pliku lokalnym (JSON).
+12. **Save/load** — stan w pliku lokalnym (JSON). Każda partia = osobny plik `.json` z nazwą zapisu (np. `~/.netcorp-tycoon/saves/moja-firma-2030-01-15.json`). Multi-slot, autosave na koniec dnia, lista zapisów z datą i podglądem KPI.
 13. **Update checker** — sprawdzanie GitHub releases przy starcie.
 14. **UI** — dark pro-operator panel, monospace, metryki, tabele, wykresy, proste SVG (racki jako sloty).
 
@@ -113,7 +115,7 @@ Gra budowana jest jako pełna wersja, ale implementowana **fazowo** (patrz kolej
 - Rack-level z fizycznymi U-slots (zostajemy przy slotach).
 - Skill tree / poziomy firmy.
 - Modding API.
-- Localization (na start EN + PL).
+- Localization (angielska lokalizacja jako opcjonalna warstwa; gra natywnie po polsku).
 
 ---
 
@@ -255,7 +257,7 @@ P(awaria) = baza_typu ×
 
 - **Język:** Python 3.11+.
 - **UI framework:** PySide6 (Qt for Python) — dojrzały, desktopowy, dobre widgety do tabel/wykresów/drag&drop.
-- **Stan gry:** plik lokalny (JSON) — brak DB, brak serwera. Save/load do `~/.netcorp-tycoon/saves/`.
+- **Stan gry:** pliki lokalne (JSON) — brak DB, brak serwera. Każda partia = osobny plik `.json` w `~/.netcorp-tycoon/saves/` z nazwą zapisu podaną przez gracza. Multi-slot, autosave na koniec każdego dnia (nadpisuje `_autosave.json`), manualny save pod nazwą. Ekran ładowania listuje zapisy z datą i mini-podglądem KPI (dzień, gotówka, klienci).
 - **Wykresy:** QtCharts lub matplotlib (.QtCharts bliżej natywnego looku).
 - **Bundling:** PyInstaller → .exe (Windows), .app (macOS), bin (Linux).
 - **Auto-update:** sprawdzanie GitHub releases API (GET /repos/.../releases/latest) przy starcie, porównanie wersji, powiadomienie gracza (nie auto-pobieranie — gracz sam pobiera z linku).
@@ -536,3 +538,5 @@ Po fazie 1 → faza 2 (regiony, enterprise, DDoS upgrade, backup) → faza 3 (mu
 | Update | Sprawdzanie GitHub releases przy starcie, powiadomienie gracza |
 | Website builder | Drag & drop sekcji, bonus do konwersji |
 | Licencja | Gra darmowa. CC BY-ND 4.0 (no derivatives na kod). Mody dozwolone przez system modów. |
+| Język gry | Polski (UI, komunikaty, raporty). EN jako opcjonalna warstwa później. |
+| Save | Multi-slot, pliki `.json` w `~/.netcorp-tycoon/saves/`, autosave dzienny + manualny. |
