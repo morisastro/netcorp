@@ -128,13 +128,26 @@ class SettingsScreen(QWidget):
         layout.addStretch()
 
     def _on_save(self) -> None:
-        from PySide6.QtWidgets import QInputDialog
-        name, ok = QInputDialog.getText(self, "Zapisz grę", "Nazwa zapisu:", text=f"partia-dzien-{self.game.state.day}")
-        if not ok or not name.strip():
+        from PySide6.QtWidgets import QDialog
+        from ui.save_dialog import SaveDialog
+        dlg = SaveDialog(default_name=f"partia-dzien-{self.game.state.day}", parent=self)
+        if dlg.exec() != QDialog.Accepted:
             return
+        name = dlg.chosen_name()
+        if not name:
+            return
+        saves = {s["name"] for s in save_load.list_saves()}
+        if name in saves:
+            reply = QMessageBox.question(
+                self, "Nadpisać zapis?",
+                f"Zapis „{name}” już istnieje. Nadpisać?",
+                QMessageBox.Yes | QMessageBox.No,
+            )
+            if reply != QMessageBox.Yes:
+                return
         try:
-            save_load.save_game(self.game, name.strip())
-            QMessageBox.information(self, "Zapisano", f"Partia zapisana jako „{name.strip()}”.")
+            save_load.save_game(self.game, name)
+            QMessageBox.information(self, "Zapisano", f"Partia zapisana jako „{name}”.")
         except Exception as e:
             QMessageBox.critical(self, "Błąd zapisu", f"Nie udało się zapisać:\n{e}")
 
