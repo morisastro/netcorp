@@ -187,9 +187,17 @@ class ProductsScreen(QWidget):
 
         self.table = QTableWidget(0, 8)
         self.table.setHorizontalHeaderLabels([
-            "Produkt", "Nazwa", "vCPU", "RAM", "Dysk", "Mbps", "Cena/mies", "Akcja"
+            "Produkt", "Nazwa planu", "vCPU", "RAM", "Dysk", "Mbps", "Cena/mies", "Akcje"
         ])
-        self.table.horizontalHeader().setStretchLastSection(True)
+        # Kolumny: produkty i nazwa rozciągane, reszta po treści
+        from PySide6.QtWidgets import QHeaderView
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        for c in range(2, 7):
+            self.table.horizontalHeader().setSectionResizeMode(c, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(7, QHeaderView.ResizeToContents)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table, 1)
 
     def _on_add_plan(self) -> None:
@@ -217,21 +225,27 @@ class ProductsScreen(QWidget):
         self.table.setRowCount(0)
         for i, plan in enumerate(self.game.state.products):
             self.table.insertRow(i)
-            self.table.setItem(i, 0, QTableWidgetItem(product_name(plan.product_type)))
+            from ui.icons import product_icon
+            self.table.setItem(i, 0, QTableWidgetItem(f"{product_icon(plan.product_type)}  {product_name(plan.product_type)}"))
             self.table.setItem(i, 1, QTableWidgetItem(plan.name))
-            self.table.setItem(i, 2, QTableWidgetItem(str(plan.cpu_cores)))
-            self.table.setItem(i, 3, QTableWidgetItem(f"{plan.ram_gb} GB"))
-            self.table.setItem(i, 4, QTableWidgetItem(f"{plan.disk_gb} GB"))
-            self.table.setItem(i, 5, QTableWidgetItem(str(plan.bandwidth_mbps)))
+            self.table.setItem(i, 2, QTableWidgetItem(f"{plan.cpu_cores}" if plan.cpu_cores else "—"))
+            self.table.setItem(i, 3, QTableWidgetItem(f"{plan.ram_gb} GB" if plan.ram_gb else "—"))
+            self.table.setItem(i, 4, QTableWidgetItem(f"{plan.disk_gb} GB" if plan.disk_gb else "—"))
+            self.table.setItem(i, 5, QTableWidgetItem(f"{plan.bandwidth_mbps}" if plan.bandwidth_mbps else "—"))
             self.table.setItem(i, 6, QTableWidgetItem(f"${plan.price_monthly:.2f}"))
 
             cell = QWidget()
             h = QHBoxLayout(cell)
-            h.setContentsMargins(2, 2, 2, 2)
-            btn_edit = QPushButton("Edytuj")
+            h.setContentsMargins(4, 4, 4, 4)
+            h.setSpacing(4)
+            btn_edit = QPushButton("✏️")
+            btn_edit.setToolTip("Edytuj plan")
+            btn_edit.setFixedSize(32, 28)
             btn_edit.clicked.connect(lambda checked=False, p=plan: self._on_edit_plan(p))
-            btn_del = QPushButton("Usuń")
+            btn_del = QPushButton("🗑️")
+            btn_del.setToolTip("Usuń plan")
             btn_del.setObjectName("danger")
+            btn_del.setFixedSize(32, 28)
             btn_del.clicked.connect(lambda checked=False, p=plan: self._on_delete_plan(p))
             h.addWidget(btn_edit)
             h.addWidget(btn_del)

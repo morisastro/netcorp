@@ -94,8 +94,16 @@ class InfrastructureScreen(QWidget):
         layout.addWidget(servers_title)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["Model", "Tier", "CPU/RAM/Dysk", "Wiek (dni)", "Obciążenie", "Status"])
-        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setHorizontalHeaderLabels(["Model", "Tier", "CPU/RAM/Dysk", "Wiek", "Obciążenie", "Status"])
+        from PySide6.QtWidgets import QHeaderView
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table, 1)
 
     def _make_bar(self, label: str) -> QFrame:
@@ -135,16 +143,19 @@ class InfrastructureScreen(QWidget):
 
         # Tabela serwerów
         self.table.setRowCount(0)
+        from ui.icons import server_icon
+        status_labels = {"ok": "✅ OK", "down": "🔴 Down", "maintenance": "⚠️ Serwis"}
         for i, s in enumerate(state.servers):
             self.table.insertRow(i)
             model = get_model(s.model_id)
             model_name = model["name"] if model else s.model_id
-            self.table.setItem(i, 0, QTableWidgetItem(model_name))
-            self.table.setItem(i, 1, QTableWidgetItem(s.quality_tier))
-            self.table.setItem(i, 2, QTableWidgetItem(f"{s.cpu_cores}c / {s.ram_gb}GB / {s.disk_gb}GB {s.disk_type}"))
-            self.table.setItem(i, 3, QTableWidgetItem(str(s.age_days)))
+            self.table.setItem(i, 0, QTableWidgetItem(f"{server_icon(s.status)}  {model_name}"))
+            tier_label = {"budget": "⬇️ budget", "standard": "▶️ standard", "premium": "⭐ premium"}.get(s.quality_tier, s.quality_tier)
+            self.table.setItem(i, 1, QTableWidgetItem(tier_label))
+            self.table.setItem(i, 2, QTableWidgetItem(f"⚙️ {s.cpu_cores}c  🔋 {s.ram_gb}GB  💾 {s.disk_gb}GB {s.disk_type}"))
+            self.table.setItem(i, 3, QTableWidgetItem(f"{s.age_days} d"))
             self.table.setItem(i, 4, QTableWidgetItem(f"CPU {s.load_cpu*100:.0f}%  RAM {s.load_ram*100:.0f}%"))
-            status_item = QTableWidgetItem(s.status)
+            status_item = QTableWidgetItem(status_labels.get(s.status, s.status))
             if s.status == "ok":
                 status_item.setForeground(QColor("#4ade80"))
             elif s.status == "down":

@@ -11,21 +11,22 @@ from PySide6.QtWidgets import (
 )
 
 from core.game import Game
+from ui.icons import failure_icon, ICON_ACTION_RESTART, ICON_ACTION_REPLACE, ICON_ACTION_FAILOVER, ICON_ACTION_IGNORE
 
 FAILURE_LABELS = {
-    "disk": "Awaria dysku",
-    "cpu_overload": "Przeciążenie CPU",
-    "overheat": "Przegrzanie",
-    "power": "Awaria zasilania",
-    "network": "Awaria sieci",
-    "ddos": "Atak DDoS",
+    "disk": "💾 Awaria dysku",
+    "cpu_overload": "⚙️ Przeciążenie CPU",
+    "overheat": "🌡️ Przegrzanie",
+    "power": "⚡ Awaria zasilania",
+    "network": "🌐 Awaria sieci",
+    "ddos": "💀 Atak DDoS",
 }
 
 ACTION_LABELS = [
-    ("restart", "Restart"),
-    ("replace", "Wymiana komponentu"),
-    ("failover", "Failover na backup"),
-    ("ignore", "Zignoruj"),
+    ("restart", f"{ICON_ACTION_RESTART} Restart"),
+    ("replace", f"{ICON_ACTION_REPLACE} Wymiana"),
+    ("failover", f"{ICON_ACTION_FAILOVER} Failover"),
+    ("ignore", f"{ICON_ACTION_IGNORE} Ignoruj"),
 ]
 
 
@@ -103,7 +104,7 @@ class FailuresScreen(QWidget):
         v.setContentsMargins(12, 12, 12, 12)
         v.setSpacing(6)
 
-        header = QLabel(f"⚠ {FAILURE_LABELS.get(failure.type, failure.type)}")
+        header = QLabel(f"⚠️  {FAILURE_LABELS.get(failure.type, failure.type)}")
         header.setStyleSheet("color: #f87171; font-weight: bold; font-size: 15px;")
         v.addWidget(header)
 

@@ -95,10 +95,10 @@ class MainMenuWindow(QWidget):
         subtitle.setStyleSheet("color: #6a6a6a; padding: 0 24px 24px 24px; background: transparent;")
         llayout.addWidget(subtitle)
 
-        self.btn_new = QPushButton("+ Nowa gra")
-        self.btn_load = QPushButton("Wczytaj partię")
-        self.btn_settings = QPushButton("Ustawienia / O programie")
-        self.btn_exit = QPushButton("Wyjście")
+        self.btn_new = QPushButton("➕  Nowa gra")
+        self.btn_load = QPushButton("📂  Wczytaj partię")
+        self.btn_settings = QPushButton("⚙️  Ustawienia / O programie")
+        self.btn_exit = QPushButton("🚪  Wyjście")
 
         for btn in (self.btn_new, self.btn_load, self.btn_settings, self.btn_exit):
             btn.setStyleSheet(

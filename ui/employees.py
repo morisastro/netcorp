@@ -90,11 +90,17 @@ class EmployeesScreen(QWidget):
 
         # Tabela pracowników
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Imię", "Rola", "Poziom", "Pensja/dzień", "Akcja"])
-        self.table.horizontalHeader().setStretchLastSection(True)
-        layout.addWidget(self.table, 1)
-
+        self.table.setHorizontalHeaderLabels(["Pracownik", "Rola", "Poziom", "Pensja/dzień", "Akcja"])
+        from PySide6.QtWidgets import QHeaderView
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
         self._update_hire_cost()
+        layout.addWidget(self.table, 1)
 
     def _update_hire_cost(self) -> None:
         level = self.level_spin.value()
@@ -119,15 +125,19 @@ class EmployeesScreen(QWidget):
 
     def refresh(self) -> None:
         self.table.setRowCount(0)
+        from ui.icons import ROLE_ICONS
         for i, emp in enumerate(self.game.state.employees):
             self.table.insertRow(i)
-            self.table.setItem(i, 0, QTableWidgetItem(emp.name))
-            self.table.setItem(i, 1, QTableWidgetItem(ROLE_LABELS.get(emp.role, emp.role)))
-            self.table.setItem(i, 2, QTableWidgetItem(str(emp.level)))
+            self.table.setItem(i, 0, QTableWidgetItem(f"👤  {emp.name}"))
+            icon = ROLE_ICONS.get(emp.role, "👤")
+            self.table.setItem(i, 1, QTableWidgetItem(f"{icon}  {ROLE_LABELS.get(emp.role, emp.role)}"))
+            self.table.setItem(i, 2, QTableWidgetItem(f"Lv {emp.level}"))
             self.table.setItem(i, 3, QTableWidgetItem(f"${emp.salary_daily:.2f}"))
 
-            btn = QPushButton("Zwolnij")
+            btn = QPushButton("🗑️")
+            btn.setToolTip("Zwolnij pracownika")
             btn.setObjectName("danger")
+            btn.setFixedSize(32, 28)
             btn.clicked.connect(lambda checked=False, e=emp: self._on_fire(e))
             self.table.setCellWidget(i, 4, btn)
 
@@ -136,7 +146,7 @@ class EmployeesScreen(QWidget):
             for c in range(4):
                 item = self.table.item(r, c)
                 if item:
-                    item.setFlags(Qt.ItemFlags(item.flags()) & ~Qt.ItemFlag.ItemIsEditable)  # ~ItemIsEditable
+                    item.setFlags(Qt.ItemFlags(item.flags()) & ~Qt.ItemFlag.ItemIsEditable)
 
     def _on_fire(self, emp: Employee) -> None:
         if emp in self.game.state.employees:

@@ -1,6 +1,7 @@
 """Ekran Klienci — agregaty per produkt + status."""
 from __future__ import annotations
 
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QHBoxLayout,
@@ -43,6 +44,14 @@ class CustomersScreen(QWidget):
         # Tabela szczegółowa
         self.table = QTableWidget(0, 5)
         self.table.setHorizontalHeaderLabels(["Produkt", "Segment", "Klienci", "Churn/mies", "SLA naruszenia"])
+        from PySide6.QtWidgets import QHeaderView
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table, 1)
 
     def refresh(self) -> None:
@@ -58,10 +67,15 @@ class CustomersScreen(QWidget):
 
         # Tabela
         self.table.setRowCount(0)
+        from ui.icons import product_icon
         for i, cust in enumerate(self.game.state.customers):
             self.table.insertRow(i)
-            self.table.setItem(i, 0, QTableWidgetItem(product_name(cust.product_type)))
+            self.table.setItem(i, 0, QTableWidgetItem(f"{product_icon(cust.product_type)}  {product_name(cust.product_type)}"))
             self.table.setItem(i, 1, QTableWidgetItem(cust.segment))
-            self.table.setItem(i, 2, QTableWidgetItem(str(cust.count)))
+            self.table.setItem(i, 2, QTableWidgetItem(f"👥 {cust.count}"))
             self.table.setItem(i, 3, QTableWidgetItem(f"{cust.churn_monthly*100:.1f}%"))
-            self.table.setItem(i, 4, QTableWidgetItem(str(cust.sla_breaches_this_month)))
+            sla = cust.sla_breaches_this_month
+            sla_item = QTableWidgetItem(f"{'⚠️ ' if sla else ''}{sla}")
+            if sla:
+                sla_item.setForeground(QColor("#f87171"))
+            self.table.setItem(i, 4, sla_item)

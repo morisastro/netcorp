@@ -31,18 +31,18 @@ from ui.theme import DARK_QSS
 from ui.website_builder import WebsiteScreen
 
 
-# (id, etykieta PL) pozycji w sidebar
+# (id, etykieta PL, ikona) pozycji w sidebar
 SIDEBAR_ITEMS = [
-    ("dashboard", "Przegląd"),
-    ("infrastructure", "Infrastruktura"),
-    ("products", "Produkty"),
-    ("customers", "Klienci"),
-    ("failures", "Awarie"),
-    ("employees", "Pracownicy"),
-    ("marketing", "Marketing"),
-    ("website", "Strona firmy"),
-    ("finances", "Finanse"),
-    ("settings", "Ustawienia"),
+    ("dashboard", "Przegląd", "📊"),
+    ("infrastructure", "Infrastruktura", "🗄️"),
+    ("products", "Produkty", "📦"),
+    ("customers", "Klienci", "👥"),
+    ("failures", "Awarie", "⚠️"),
+    ("employees", "Pracownicy", "👤"),
+    ("marketing", "Marketing", "📢"),
+    ("website", "Strona firmy", "🌐"),
+    ("finances", "Finanse", "💰"),
+    ("settings", "Ustawienia", "⚙️"),
 ]
 
 
@@ -102,8 +102,8 @@ class MainWindow(QWidget):
         layout.addWidget(logo)
 
         self.nav_buttons: dict[str, QPushButton] = {}
-        for sid, label in SIDEBAR_ITEMS:
-            btn = QPushButton(label)
+        for sid, label, icon in SIDEBAR_ITEMS:
+            btn = QPushButton(f"  {icon}   {label}")
             btn.setCheckable(True)
             btn.clicked.connect(lambda checked=False, s=sid: self._switch_screen(s))
             layout.addWidget(btn)
@@ -126,27 +126,27 @@ class MainWindow(QWidget):
         layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(8)
 
-        self.date_label = QLabel("Dzień 1 • 2030-01-01")
+        self.date_label = QLabel("📅 Dzień 1 • 2030-01-01")
         self.date_label.setObjectName("kpi")
         layout.addWidget(self.date_label)
 
         layout.addStretch()
 
-        self.kpi_cash = QLabel("Gotówka: $5,000.00")
+        self.kpi_cash = QLabel("💰 Gotówka: $5,000.00")
         self.kpi_cash.setObjectName("kpi")
         layout.addWidget(self.kpi_cash)
 
-        self.kpi_customers = QLabel("Klienci: 0")
+        self.kpi_customers = QLabel("👥 Klienci: 0")
         self.kpi_customers.setObjectName("kpi")
         layout.addWidget(self.kpi_customers)
 
-        self.kpi_reputation = QLabel("Reputacja: 50/100")
+        self.kpi_reputation = QLabel("⭐ Reputacja: 50/100")
         self.kpi_reputation.setObjectName("kpi")
         layout.addWidget(self.kpi_reputation)
 
         layout.addStretch()
 
-        self.btn_next_day = QPushButton("▶ Następny dzień")
+        self.btn_next_day = QPushButton("▶️  Następny dzień")
         self.btn_next_day.setObjectName("primary")
         self.btn_next_day.clicked.connect(self._on_next_day)
         layout.addWidget(self.btn_next_day)
@@ -243,10 +243,10 @@ class MainWindow(QWidget):
     def _refresh_all(self) -> None:
         """Odświeża topbar i aktywny ekran."""
         state = self.game.state
-        self.date_label.setText(self.game.date_label())
-        self.kpi_cash.setText(f"Gotówka: ${state.cash:,.2f}")
-        self.kpi_customers.setText(f"Klienci: {self.game.total_customers()}")
-        self.kpi_reputation.setText(f"Reputacja: {state.reputation:.0f}/100")
+        self.date_label.setText(f"📅 {self.game.date_label()}")
+        self.kpi_cash.setText(f"💰 Gotówka: ${state.cash:,.2f}")
+        self.kpi_customers.setText(f"👥 Klienci: {self.game.total_customers()}")
+        self.kpi_reputation.setText(f"⭐ Reputacja: {state.reputation:.0f}/100")
 
         widget = self.screens.get(self._current_screen_id)
         if hasattr(widget, "refresh"):
