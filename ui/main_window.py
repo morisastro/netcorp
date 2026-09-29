@@ -270,8 +270,14 @@ class MainWindow(QWidget):
         t.start()
 
     def _show_update_banner(self, info: dict) -> None:
-        self.update_title.setText(f"Dostępna nowa wersja: {info['tag']}")
+        assets = info.get("assets", [])
+        win_asset = next((a for a in assets if "win" in a["name"].lower()), None)
+        text = f"⬆ Dostępna nowa wersja: {info['tag']}"
+        if win_asset:
+            text += f" — pobierz Windows ({win_asset['size_mb']} MB)"
+        self.update_title.setText(text)
         self.update_msg.setText(info.get("name", ""))
+        # Link otwiera release page, nie konkretny plik
         self.update_link.clicked.connect(lambda: self._open_url(info.get("url", "")))
         self.update_banner.setFixedHeight(32)
 

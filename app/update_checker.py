@@ -52,7 +52,8 @@ def is_newer(latest: str, current: str) -> bool:
 def check_for_update() -> Optional[dict]:
     """Sprawdza aktualizacje. Zwraca dict powiadomienia jeśli jest nowsza wersja.
 
-    Dict: {tag, url, name, body}. None jeśli brak lub błąd.
+    Dict: {tag, url, name, body, assets}. None jeśli brak lub błąd.
+    assets = lista {name, url, size_mb} dla pobrania per platforma.
     """
     release = fetch_latest_release()
     if release is None:
@@ -62,9 +63,18 @@ def check_for_update() -> Optional[dict]:
         return None
     if not is_newer(latest_tag, APP_VERSION):
         return None
+    # Lista plików do pobrania (z linkiem do Windows builda)
+    assets = []
+    for a in release.get("assets", []):
+        assets.append({
+            "name": a.get("name", ""),
+            "url": a.get("browser_download_url", ""),
+            "size_mb": round(a.get("size", 0) / (1024 * 1024), 1),
+        })
     return {
         "tag": latest_tag,
         "url": release.get("html_url", ""),
         "name": release.get("name", latest_tag),
         "body": release.get("body", ""),
+        "assets": assets,
     }

@@ -417,11 +417,23 @@ class MainMenuWindow(QWidget):
         if info is None:
             QMessageBox.information(self, "Aktualizacje", "Masz najnowszą wersję.")
             return
-        QMessageBox.information(
-            self, "Dostępna aktualizacja",
-            f"Nowa wersja: {info['tag']}\n{info.get('name', '')}\n\n"
-            f"Pobierz z: {info.get('url', '')}",
-        )
+        # Zbuduj listę plików do pobrania
+        assets = info.get("assets", [])
+        win_asset = next((a for a in assets if "win" in a["name"].lower()), None)
+        lines = [f"Nowa wersja: {info['tag']}"]
+        lines.append(info.get("name", ""))
+        lines.append("")
+        if win_asset:
+            lines.append(f"Pobierz Windows: {win_asset['name']} ({win_asset['size_mb']} MB)")
+            lines.append(f"  {win_asset['url']}")
+        else:
+            lines.append("Pobierz z:")
+            lines.append(info.get("url", ""))
+        lines.append("")
+        lines.append("Wszystkie pliki:")
+        for a in assets:
+            lines.append(f"  • {a['name']} ({a['size_mb']} MB)")
+        QMessageBox.information(self, "Dostępna aktualizacja", "\n".join(lines))
 
     def _check_update_async(self) -> None:
         import threading

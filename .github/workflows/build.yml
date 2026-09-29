@@ -18,11 +18,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact: netcorp-tycoon-v${{ github.ref_name }}-win.zip
+            platform: win
           - os: ubuntu-latest
-            artifact: netcorp-tycoon-v${{ github.ref_name }}-linux.zip
+            platform: linux
           - os: macos-latest
-            artifact: netcorp-tycoon-v${{ github.ref_name }}-mac.zip
+            platform: mac
 
     steps:
       - uses: actions/checkout@v4
@@ -47,22 +47,38 @@ jobs:
         shell: bash
         run: cp LICENSE dist/netcorp-tycoon/LICENSE
 
-      - name: Package ZIP
+      - name: Get version from tag
+        id: ver
+        shell: bash
+        run: |
+          # ref_name = v0.1.0 → version = 0.1.0
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "artifact=netcorp-tycoon-v${VERSION}-${{ matrix.platform }}.zip" >> $GITHUB_OUTPUT
+
+      - name: Package ZIP (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist\netcorp-tycoon\*" -DestinationPath "${{ steps.ver.outputs.artifact }}"
+
+      - name: Package ZIP (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         shell: bash
         run: |
           cd dist
-          zip -r "../${{ matrix.artifact }}" netcorp-tycoon
+          zip -r "../${{ steps.ver.outputs.artifact }}" netcorp-tycoon
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}
+          name: ${{ steps.ver.outputs.artifact }}
+          path: ${{ steps.ver.outputs.artifact }}
 
       - name: Upload to release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.artifact }}
+          files: ${{ steps.ver.outputs.artifact }}
           generate_release_notes: true
-          name: NetCorp Tycoon ${{ github.ref_name }}
+          name: NetCorp Tycoon v${{ steps.ver.outputs.version }}
