@@ -42,7 +42,7 @@ class InfrastructureScreen(QWidget):
         layout.setSpacing(12)
 
         title = QLabel("Infrastruktura")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setObjectName("screen-title")
         layout.addWidget(title)
 
         # Karty zasobów DC

@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 
 from core.game import Game
 from data.products import product_name
+from ui.widgets.animated import ScreenTitleLabel
 from ui.widgets.kpi_card import KpiCard
 
 
@@ -30,8 +31,7 @@ class DashboardScreen(QWidget):
         outer.setContentsMargins(20, 20, 20, 20)
         outer.setSpacing(16)
 
-        title = QLabel("Przegląd firmy")
-        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #d4d4d4;")
+        title = ScreenTitleLabel("Przegląd firmy")
         outer.addWidget(title)
 
         # Rząd KPI

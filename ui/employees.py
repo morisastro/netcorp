@@ -42,7 +42,7 @@ class EmployeesScreen(QWidget):
         layout.setSpacing(12)
 
         title = QLabel("Pracownicy")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setObjectName("screen-title")
         layout.addWidget(title)
 
         info = QLabel(

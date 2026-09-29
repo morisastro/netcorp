@@ -31,7 +31,7 @@ class CustomersScreen(QWidget):
         layout.setSpacing(12)
 
         title = QLabel("Klienci")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setObjectName("screen-title")
         layout.addWidget(title)
 
         # Karty KPI per produkt

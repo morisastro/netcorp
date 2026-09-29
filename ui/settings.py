@@ -31,7 +31,7 @@ class SettingsScreen(QWidget):
         layout.setSpacing(12)
 
         title = QLabel("Ustawienia")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setObjectName("screen-title")
         layout.addWidget(title)
 
         # Sekcja: zapis

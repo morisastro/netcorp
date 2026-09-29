@@ -23,6 +23,61 @@ QMainWindow {
     border-right: 1px solid #333333;
 }
 
+/* Hover na tekście — animacja (tylko dla .hoverable) */
+QLabel.hoverable {
+    color: #d4d4d4;
+    transition: color 150ms ease;
+}
+
+QLabel.hoverable:hover {
+    color: #60a5fa;
+}
+
+QLabel#card-value {
+    transition: color 150ms ease;
+}
+
+QLabel#card-value:hover {
+    color: #93c5fd;
+}
+
+QLabel#card-title {
+    transition: color 150ms ease;
+}
+
+QLabel#card-title:hover {
+    color: #60a5fa;
+}
+
+QLabel#screen-title {
+    color: #d4d4d4;
+    font-size: 20px;
+    font-weight: bold;
+    transition: color 150ms ease, text-shadow 150ms ease;
+}
+
+QLabel#screen-title:hover {
+    color: #60a5fa;
+}
+
+QLabel#section-title {
+    color: #9a9a9a;
+    font-size: 14px;
+    font-weight: bold;
+    transition: color 150ms ease;
+}
+
+QLabel#section-title:hover {
+    color: #60a5fa;
+}
+
+/* Tabele — hover komórek */
+QTableWidget::item:hover {
+    background-color: #2a2a2a;
+    color: #60a5fa;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
 #sidebar QPushButton {
     background-color: transparent;
     border: none;
@@ -34,8 +89,7 @@ QMainWindow {
 
 #sidebar QPushButton:hover {
     background-color: #222222;
-    color: #d4d4d4;
-    /* animacja hover */
+    color: #60a5fa;
     transition: background-color 120ms ease, color 120ms ease;
 }
 

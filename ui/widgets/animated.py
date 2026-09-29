@@ -85,6 +85,68 @@ class AnimatedLabel(QLabel):
         self._pulse_anim = anim
 
 
+class HoverLabel(QLabel):
+    """QLabel z efektem hover — zmiana koloru + subtelny glow (text-shadow).
+
+    Używa eventy mouseEnter/mouseLeave + stylesheet do animacji koloru.
+    Można ustawić property hover_color i glow_color.
+    """
+
+    def __init__(self, text: str = "", hover_color: str = "#60a5fa", parent=None) -> None:
+        super().__init__(text, parent)
+        self._hover_color = hover_color
+        self._base_color = self.palette().color(self.foregroundRole()).name()
+        self.setMouseTracking(True)
+        self.setAttribute(Qt.WA_Hover, True)
+
+    def enterEvent(self, event) -> None:  # noqa: N802
+        self.setStyleSheet(
+            f"color: {self._hover_color}; "
+            f"transition: color 200ms ease;"
+        )
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:  # noqa: N802
+        self.setStyleSheet("")
+        super().leaveEvent(event)
+
+
+class ScreenTitleLabel(QLabel):
+    """Tytuł ekranu z efektem hover (kolor + glow)."""
+
+    def __init__(self, text: str, parent=None) -> None:
+        super().__init__(text, parent)
+        self.setObjectName("screen-title")
+        self.setAttribute(Qt.WA_Hover, True)
+
+    def enterEvent(self, event) -> None:  # noqa: N802
+        self.setStyleSheet(
+            "QLabel#screen-title { color: #60a5fa; }"
+        )
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:  # noqa: N802
+        self.setStyleSheet("")
+        super().leaveEvent(event)
+
+
+class SectionTitleLabel(QLabel):
+    """Podtytuł sekcji z efektem hover."""
+
+    def __init__(self, text: str, parent=None) -> None:
+        super().__init__(text, parent)
+        self.setObjectName("section-title")
+        self.setAttribute(Qt.WA_Hover, True)
+
+    def enterEvent(self, event) -> None:  # noqa: N802
+        self.setStyleSheet("QLabel#section-title { color: #60a5fa; }")
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:  # noqa: N802
+        self.setStyleSheet("")
+        super().leaveEvent(event)
+
+
 class CountUpLabel(QLabel):
     """QLabel animujący liczbę od starej do nowej wartości (count-up)."""
 
