@@ -39,6 +39,7 @@ class MainMenuWindow(QWidget):
         self.on_start_game = on_start_game  # callback(game: Game)
         self.setWindowTitle(f"{APP_DISPLAY_NAME}")
         self.resize(900, 600)
+        self.setMinimumSize(760, 520)
         self._build_ui()
         self._apply_theme()
 

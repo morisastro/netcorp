@@ -21,9 +21,14 @@ from ui.employees import EmployeesScreen
 from ui.failures import FailuresScreen
 from ui.finances import FinancesScreen
 from ui.customers import CustomersScreen
-from ui.placeholder import PlaceholderScreen
+from ui.infrastructure import InfrastructureScreen
+from ui.main_menu import MainMenuWindow  # noqa: F401  (re-export)
+from ui.marketing import MarketingScreen
+from ui.placeholder import PlaceholderScreen  # noqa: F401  (zostawione na przyszłość)
 from ui.products import ProductsScreen
+from ui.settings import SettingsScreen
 from ui.theme import DARK_QSS
+from ui.website_builder import WebsiteScreen
 
 
 # (id, etykieta PL) pozycji w sidebar
@@ -59,6 +64,7 @@ class MainWindow(QWidget):
     def _build_ui(self) -> None:
         self.setWindowTitle(f"{APP_DISPLAY_NAME} v{APP_VERSION}")
         self.resize(1280, 800)
+        self.setMinimumSize(1024, 640)
 
         root = QHBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
@@ -178,20 +184,15 @@ class MainWindow(QWidget):
     def _build_screens(self) -> None:
         # Dashboard — zaimplementowany
         self.screens["dashboard"] = DashboardScreen(self.game)
+        self.screens["infrastructure"] = InfrastructureScreen(self.game)
         self.screens["products"] = ProductsScreen(self.game)
         self.screens["customers"] = CustomersScreen(self.game)
         self.screens["failures"] = FailuresScreen(self.game)
         self.screens["employees"] = EmployeesScreen(self.game)
+        self.screens["marketing"] = MarketingScreen(self.game)
+        self.screens["website"] = WebsiteScreen(self.game)
         self.screens["finances"] = FinancesScreen(self.game)
-        # Pozostałe — placeholder z opisem
-        placeholders = {
-            "infrastructure": ("Infrastruktura", "Serwerownia, sloty, katalog serwerów, zasoby DC (prąd/sieć/chłodzenie)."),
-            "marketing": ("Marketing", "Budżet dzienny, ROI, przyrost klientów."),
-            "website": ("Strona firmy", "Drag & drop builder sekcji strony — bonus do konwersji klientów."),
-            "settings": ("Ustawienia", "Zapis/wczytanie gry, licencja, sprawdź aktualizacje, o programie."),
-        }
-        for sid, (title, desc) in placeholders.items():
-            self.screens[sid] = PlaceholderScreen(title, desc)
+        self.screens["settings"] = SettingsScreen(self.game)
 
         for sid, widget in self.screens.items():
             scroll = QScrollArea()

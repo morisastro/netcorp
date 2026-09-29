@@ -57,8 +57,8 @@ CHURN_FROM_LOW_UPTIME = 0.05      # +5% jeśli uptime < 99%
 CHURN_FROM_SLOW_SUPPORT = 0.03    # +3% jeśli support wolny
 
 # ---- Marketing ----
-MARKETING_COST_PER_NEW_CUSTOMER = 25.0  # średnio $ wydan na marketing → 1 nowy klient
-MARKETING_BASELINE_NEW_CUSTOMERS = 2     # bazowo dziennie (bez marketingu, z reputacji)
+MARKETING_COST_PER_NEW_CUSTOMER = 15.0  # średnio $ wydan na marketing → 1 nowy klient
+MARKETING_BASELINE_NEW_CUSTOMERS = 3     # bazowo dziennie (bez marketingu, z reputacji)
 
 # ---- Pracownicy ----
 EMPLOYEE_SALARY_PER_LEVEL = 50.0   # pensja dzienna = level × $50

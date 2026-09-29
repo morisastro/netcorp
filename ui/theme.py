@@ -35,6 +35,8 @@ QMainWindow {
 #sidebar QPushButton:hover {
     background-color: #222222;
     color: #d4d4d4;
+    /* animacja hover */
+    transition: background-color 120ms ease, color 120ms ease;
 }
 
 #sidebar QPushButton:checked {
@@ -80,6 +82,7 @@ QPushButton {
 QPushButton:hover {
     background-color: #333333;
     border-color: #555555;
+    transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 QPushButton:pressed {
@@ -97,6 +100,8 @@ QPushButton#primary {
 
 QPushButton#primary:hover {
     background-color: #3b82f6;
+    border-color: #3b82f6;
+    transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 QPushButton#danger {
@@ -168,6 +173,8 @@ QProgressBar {
 QProgressBar::chunk {
     background-color: #2563eb;
     border-radius: 2px;
+    /* animacja ładowania */
+    transition: width 200ms ease;
 }
 
 QProgressBar::chunk[warn="true"] { background-color: #facc15; }
