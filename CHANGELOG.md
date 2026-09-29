@@ -1,20 +1,23 @@
 # Changelog
 
-## [0.2.4] - 2026-09-29
+## [0.2.7] - 2026-09-29
+
+### Naprawione
+- Krytyczny bug: domeny nie rosły (count zawsze 0)
+  - churn_services() nadpisywał count domen wartością z services (domeny nie są services)
+  - Dodany osobny churn dla domen (z arrival_days i avg_stay_days)
 
 ### Dodane
-- 8 nowych kategorii modowania (łącznie 18):
-  - loan (parametry pożyczki: odsetki, rate_per_customer, min_customers)
-  - sla_penalties (kary za naruszenia SLA per segment)
-  - segments (własne segmenty klientów)
-  - game_settings (nazwa regionu startowego, sloty, prąd, chłodzenie)
-  - modifiers (globalne mnożniki: income/expense/churn)
-  - website_blocks (dodatkowe bloki strony)
-  - tutorial_steps (własne kroki samouczka)
-  - events (własne wydarzenia)
-  - milestones (własne kamienie milowe)
-- Nickname gracza / nazwa firmy (powolne wprowadzanie do MP)
-  - Pole nickname i nazwa firmy w menu startowym (panel trybów)
-  - Nickname pokazywany w topbarze gry (👤 nick 🏢 firma)
-  - Unikalne player_id generowane per gra (do multiplayer w przyszłości)
-- Aktualizowany przykładowy mod demonstrujący wszystkie 18 kategorii
+- Komunikat "⚠️ SERWERY NIEWYSTARCZAJĄCE" w raporcie dziennym
+  - Pokazuje liczbę klientów którzy nie kupili (brak miejsca na serwerach)
+  - Sugeruje kupno serwerów / rozbudowę serwerowni
+- Debug mode w Ustawieniach
+  - Checkbox (zapisywany w settings.json)
+  - Loguje detale symulacji do konsoli (cash, services, customers, unplaced, failures, tickets)
+- Sekcja "🐞 Zgłaszanie błędów" w Ustawieniach
+  - Link do GitHub Issues (https://github.com/morisastro/netcorp/issues)
+- Skalowanie UI pod rozdzielczość monitora (screen_info.py)
+  - Wykrywanie rozmiaru ekranu, dostosowanie okna i liczby kolumn kart
+- Churn klientów wydłużony: 1-7 dni → 5-15 dni
+- Oversubscription serwerów zwiększony: 1.5× → 3× CPU, 1.2× → 2× RAM
+- Max 20 klientów z marketingu dziennie (żeby nie zalewać gracza)
