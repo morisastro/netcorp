@@ -49,14 +49,13 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
 
     # ---- Przyrost klientów ----
     marketing = state.marketing_budget_daily
-    # Bazowo: więcej klientów dziennie (zwiększona szansa + ilość)
-    # Reputation > 20 → zawsze co najmniej 1 klient dziennie (50% szans na dodatkowy)
-    if state.reputation > 20:
-        baseline = 1 + rng.randint(0, balance.MARKETING_BASELINE_NEW_CUSTOMERS + 1)
-        new_customers += baseline
-    # Mały organiczny przyrost nawet przy niskiej reputacji
-    elif rng.chance(0.4):
-        new_customers += rng.randint(1, 2)
+    # Bazowo: bardzo mało klientów na start (gra zaczyna się trudna)
+    # Reputacja > 20 → szansa na 1 klienta dziennie (40%)
+    if state.reputation > 20 and rng.chance(0.4):
+        new_customers += 1
+    # Bardzo rzadki organiczny przyrost przy niskiej reputacji (15% szans na 1)
+    elif rng.chance(0.15):
+        new_customers += 1
     # Z marketingu: każdy $ wygeneruje 1/MARKETING_COST_PER_NEW_CUSTOMER klienta
     if marketing > 0 and total_customers < 100000:
         # Bonus ze strony (conversion_bonus)
@@ -66,8 +65,8 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
         from_marketing = int(marketing / balance.MARKETING_COST_PER_NEW_CUSTOMER * conv_rate)
         new_customers += from_marketing
 
-    # Im więcej planów produktów → łatwiej zdobyć klienta (bonus)
-    if len(state.products) >= 1 and rng.chance(0.5):
+    # Bonus za posiadanie planów produktów (25% szans na +1)
+    if len(state.products) >= 1 and rng.chance(0.25):
         new_customers += 1
 
     if new_customers > 0 and state.customers:
