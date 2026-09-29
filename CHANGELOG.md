@@ -1,14 +1,25 @@
 # Changelog
 
-## [0.3.0] - 2026-09-29
+## [0.3.1] - 2026-09-29
 
-### Naprawione
-- Reputacja spadała do 0 i nigdy nie wracała
-  - Kara za otwarte tickety: -0.2/ticket → max -2/dzień (lżejsza)
-  - Nagroda za rozwiązane tickety: +0.1 → +0.5/dzień (silniejsza)
-  - Kara za awarie: -0.5 → -0.3 per awaria (lżejsza)
-- Tickety sieciowe (network/DDoS) kumulowały się gdy brak network engineera
-  - Support może przejąć połowę pracy neteng/sysadmin gdy brak specjalisty
-
-### Zmienione
-- Playtest 50 dni: gra stabilna (cash rośnie, reputacja stabilna, tickety nadążane)
+### Dodane
+- Awansowanie pracowników (XP system)
+  - Pracownicy zdobywają XP za rozwiązanee tickety/awarie
+  - Awans na kolejny level przy odpowiedniej liczbie XP (max Lv 5)
+  - Pensja rośnie z awansem (level × $30/dzień)
+  - Pasek XP pokazywany w karcie pracownika
+- Błędy pracowników (rzadkie, z konsekwencjami)
+  - Każda rola techniczna ma konkretne typy błędów:
+    - Sysadmin: dysk, zasilanie, ogólny
+    - Network engineer: sieć, DDoS, ogólny
+    - Support: tylko ogólny (mało ryzykowne)
+  - Błąd = serwer pada na 1 dzień, pracownik traci level, reputacja spada
+  - Szansa błędu maleje z poziomem (Lv1: 2%, Lv5: 0.8%)
+- Checkbox "Auto-naprawa" per pracownik
+  - Gracz wybiera czy pracownik może automatycznie naprawiać
+  - Wyłączenie = brak błędów ale też brak auto-napraw
+- Nowe opcje modowania dla pracowników:
+  - mistake_chance_base, mistake_rep_loss, mistake_level_loss
+  - xp_per_ticket, xp_per_level, max_level
+- Typ awarii "employee_mistake" w UI
+- Liczba błędów pokazywana w karcie pracownika

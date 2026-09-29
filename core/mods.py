@@ -213,6 +213,18 @@ def apply_mods(state: Any) -> dict[str, Any]:
             balance_mod.EMPLOYEE_SALARY_PER_LEVEL = mods["employee"]["salary_per_level"]
         if "capacity_per_level" in mods["employee"]:
             balance_mod.EMPLOYEE_CAPACITY_PER_LEVEL = mods["employee"]["capacity_per_level"]
+        if "mistake_chance_base" in mods["employee"]:
+            balance_mod.EMPLOYEE_MISTAKE_CHANCE_BASE = mods["employee"]["mistake_chance_base"]
+        if "mistake_rep_loss" in mods["employee"]:
+            balance_mod.EMPLOYEE_MISTAKE_REP_LOSS = mods["employee"]["mistake_rep_loss"]
+        if "mistake_level_loss" in mods["employee"]:
+            balance_mod.EMPLOYEE_MISTAKE_LEVEL_LOSS = mods["employee"]["mistake_level_loss"]
+        if "xp_per_ticket" in mods["employee"]:
+            balance_mod.EMPLOYEE_XP_PER_TICKET = mods["employee"]["xp_per_ticket"]
+        if "xp_per_level" in mods["employee"]:
+            balance_mod.EMPLOYEE_XP_PER_LEVEL = mods["employee"]["xp_per_level"]
+        if "max_level" in mods["employee"]:
+            balance_mod.EMPLOYEE_MAX_LEVEL = mods["employee"]["max_level"]
 
     # 9. Names — nadpisz listy
     if mods["names"]:

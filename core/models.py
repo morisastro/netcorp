@@ -121,6 +121,12 @@ class Employee:
     level: int              # 1-5
     salary_daily: float = 0.0
     hired_day: int = 0
+    # Doświadczenie (rośnie z rozwiązanymi biletami/awariami)
+    xp: int = 0
+    # Liczba błędów popełnionych
+    mistakes: int = 0
+    # Czy gracz pozwala pracownikowi na auto-naprawy (gracz wybiera)
+    auto_repair_enabled: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -130,6 +136,9 @@ class Employee:
             "level": self.level,
             "salary_daily": self.salary_daily,
             "hired_day": self.hired_day,
+            "xp": self.xp,
+            "mistakes": self.mistakes,
+            "auto_repair_enabled": self.auto_repair_enabled,
         }
 
     @classmethod

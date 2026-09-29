@@ -91,6 +91,23 @@ class DailyReportDialog(QDialog):
                 fail_label.setStyleSheet("color: #f87171;")
                 layout.addWidget(fail_label)
 
+        # Błędy pracowników
+        mistakes = report.get("employee_mistakes", [])
+        if mistakes:
+            layout.addSpacing(8)
+            mistake_title = QLabel("🤦 Błąd pracownika!")
+            mistake_title.setStyleSheet("font-weight: bold; color: #facc15; font-size: 15px;")
+            layout.addWidget(mistake_title)
+            for m in mistakes:
+                mistake_label = QLabel(
+                    f"   • {m['employee']} ({m['role']}) popełnił błąd!\n"
+                    f"      Serwer {m['server']} padł na 1 dzień. "
+                    f"Pracownik traci level, reputacja spada."
+                )
+                mistake_label.setStyleSheet("color: #facc15;")
+                mistake_label.setWordWrap(True)
+                layout.addWidget(mistake_label)
+
         layout.addStretch()
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok)

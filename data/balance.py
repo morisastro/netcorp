@@ -63,6 +63,16 @@ MARKETING_BASELINE_NEW_CUSTOMERS = 3     # bazowo dziennie (bez marketingu, z re
 # ---- Pracownicy ----
 EMPLOYEE_SALARY_PER_LEVEL = 30.0   # pensja dzienna = level × $30 (było $50)
 EMPLOYEE_CAPACITY_PER_LEVEL = 10    # pojemność (ticketów/awacji) = level × 10
+# XP za rozwiązanego ticketa/awarię
+EMPLOYEE_XP_PER_TICKET = 5
+EMPLOYEE_XP_PER_LEVEL = 50  # 50 XP = awans na kolejny level
+EMPLOYEE_MAX_LEVEL = 5
+# Błąd pracownika (rzadkie)
+EMPLOYEE_MISTAKE_CHANCE_BASE = 0.02  # 2% szans per pracownik per dzień (bazowo)
+EMPLOYEE_MISTAKE_CHANCE_PER_LEVEL = -0.003  # wyższy level = mniejsza szansa błędu
+EMPLOYEE_MISTAKE_REP_LOSS = 3.0  # utrata reputacji przy błędzie
+EMPLOYEE_MISTAKE_LEVEL_LOSS = 1  # pracownik traci 1 level przy błędzie
+EMPLOYEE_MISTAKE_SERVER_DOWN_DAYS = 1  # serwer pada na 1 dzień
 
 # ---- Koszty stałe (dzienne) ----
 # Prąd: $/kWh

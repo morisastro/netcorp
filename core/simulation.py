@@ -160,12 +160,84 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     state.tickets_resolved_today = tickets_resolved
     state.tickets_open = ticket_result["leftover"]
 
+    # ---- XP i awansowanie pracowników ----
+    from data import balance as bal
+    employee_mistakes: list[dict] = []
+    for emp in state.employees:
+        # Dodaj XP za rozwiązane tickety (proporcjonalnie do roli)
+        if tickets_resolved > 0 and emp.role in ("support", "sysadmin", "neteng"):
+            # Każdy pracownik dostaje XP za rozwiązane tickety (podział równy)
+            share = max(1, tickets_resolved // max(1, len([e for e in state.employees if e.role in ("support", "sysadmin", "neteng")])))
+            emp.xp += share * bal.EMPLOYEE_XP_PER_TICKET
+        # Sprawdź awans
+        while emp.level < bal.EMPLOYEE_MAX_LEVEL and emp.xp >= emp.level * bal.EMPLOYEE_XP_PER_LEVEL:
+            emp.xp -= emp.level * bal.EMPLOYEE_XP_PER_LEVEL
+            emp.level += 1
+            emp.salary_daily = emp.level * bal.EMPLOYEE_SALARY_PER_LEVEL
+
+    # ---- Błąd pracownika (rzadkie) ----
+    # Każda rola ma konkretne typy błędów
+    ROLE_MISTAKES = {
+        "sysadmin": ["disk", "power", "employee_mistake"],   # sysadmin: dysk, zasilanie, ogólny
+        "neteng": ["network", "ddos", "employee_mistake"],   # neteng: sieć, DDoS, ogólny
+        "support": ["employee_mistake"],                      # support: tylko ogólny błąd (mniej ryzykowne)
+    }
+    for emp in state.employees:
+        if emp.role not in ROLE_MISTAKES:
+            continue  # sales/marketing nie robią błędów technicznych
+        # Tylko jeśli gracz pozwolił na auto-naprawy
+        if not getattr(emp, "auto_repair_enabled", True):
+            continue
+        # Szansa błędu: base + (level-1) × per_level (wyższy level = mniejsza szansa)
+        mistake_chance = bal.EMPLOYEE_MISTAKE_CHANCE_BASE + (emp.level - 1) * bal.EMPLOYEE_MISTAKE_CHANCE_PER_LEVEL
+        mistake_chance = max(0.005, mistake_chance)  # min 0.5%
+        if rng.chance(mistake_chance):
+            # Pracownik popełnił błąd!
+            emp.mistakes += 1
+            # Traci level (min 1)
+            if emp.level > 1:
+                emp.level -= bal.EMPLOYEE_MISTAKE_LEVEL_LOSS
+                emp.salary_daily = emp.level * bal.EMPLOYEE_SALARY_PER_LEVEL
+            # Wybierz typ błędu zależny od roli
+            mistake_types = ROLE_MISTAKES[emp.role]
+            mistake_type = rng.choice(mistake_types)
+            # Wybierz losowy serwer do padnięcia
+            ok_servers = [s for s in state.servers if s.status == "ok"]
+            if ok_servers:
+                victim = rng.choice(ok_servers)
+                victim.status = "down"
+                from core.models import Failure
+                mistake_failure = Failure(
+                    id=f"fail_mistake_{state.day}_{emp.id}_{rng.randint(0, 9999)}",
+                    type=mistake_type,
+                    server_id=victim.id,
+                    region_id=victim.region_id,
+                    started_day=state.day,
+                    duration_hours=24,  # 1 dzień
+                    status="active",
+                    actions_taken=[],
+                )
+                if mistake_type == "ddos":
+                    mistake_failure.server_id = None
+                state.failures_active.append(mistake_failure)
+                new_failures.append(mistake_failure)
+                employee_mistakes.append({
+                    "employee": emp.name,
+                    "role": emp.role,
+                    "server": victim.id,
+                    "mistake_type": mistake_type,
+                })
+
     # Nierozwiązane tickety → spadek reputacji (lżejszy)
     if state.tickets_open > 0:
         # Max -2/dzień niezależnie od liczby ticketów (było -0.2 per ticket = -10+)
         state.reputation = max(0, state.reputation - min(2.0, state.tickets_open * 0.1))
     elif tickets_resolved > 0:
         state.reputation = min(100, state.reputation + 0.5)  # +0.5 za rozwiązane (było +0.1)
+
+    # Kara za błąd pracownika
+    if employee_mistakes:
+        state.reputation = max(0, state.reputation - len(employee_mistakes) * balance.EMPLOYEE_MISTAKE_REP_LOSS)
 
     # ---- Aktualizacja gotówki ----
     state.cash += income - expenses
@@ -224,6 +296,7 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
         "bankrupt": state.bankrupt,
         "debt": state.debt,
         "unplaced": unplaced,  # klienci którzy nie kupili (brak serwera)
+        "employee_mistakes": employee_mistakes,  # błędy pracowników
     }
 
 

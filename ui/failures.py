@@ -20,6 +20,7 @@ FAILURE_LABELS = {
     "power": "⚡ Awaria zasilania",
     "network": "🌐 Awaria sieci",
     "ddos": "💀 Atak DDoS",
+    "employee_mistake": "🤦 Błąd pracownika",
 }
 
 ACTION_LABELS = [

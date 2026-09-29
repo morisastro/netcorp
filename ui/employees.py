@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QFrame,
     QGridLayout,
@@ -31,9 +32,9 @@ ROLE_LABELS = {
 }
 
 ROLE_DESC = {
-    "support": "Zamyka tickety klientów",
-    "sysadmin": "Naprawia awarie sprzętowe",
-    "neteng": "Naprawia awarie sieci / DDoS",
+    "support": "Zamyka tickety klientów (błąd: ogólny, mało ryzykowne)",
+    "sysadmin": "Naprawia awarie sprzętowe (błąd: dysk, zasilanie)",
+    "neteng": "Naprawia awarie sieci / DDoS (błąd: sieć, DDoS)",
     "sales": "Zwiększa konwersję klientów",
     "marketing": "Zwiększa ROI marketingu",
 }
@@ -77,6 +78,37 @@ class EmployeeCard(QFrame):
         desc_lbl = QLabel(ROLE_DESC.get(employee.role, ""))
         desc_lbl.setStyleSheet("color: #6a6a6a; font-size: 11px;")
         v.addWidget(desc_lbl)
+
+        # XP pasek (jeśli ma XP)
+        if employee.xp > 0 or employee.level < 5:
+            from data import balance
+            xp_needed = employee.level * balance.EMPLOYEE_XP_PER_LEVEL
+            xp_pct = min(100, int(employee.xp / max(1, xp_needed) * 100))
+            xp_lbl = QLabel(f"⚡ XP: {employee.xp}/{xp_needed} ({xp_pct}%)")
+            xp_lbl.setStyleSheet("color: #93c5fd; font-size: 11px;")
+            v.addWidget(xp_lbl)
+
+        # Błędy pracownika (jeśli > 0)
+        if employee.mistakes > 0:
+            mistakes_lbl = QLabel(f"🤦 Błędy: {employee.mistakes}")
+            mistakes_lbl.setStyleSheet("color: #f87171; font-size: 11px;")
+            v.addWidget(mistakes_lbl)
+
+        # Checkbox: auto-naprawy (gracz wybiera)
+        # Tylko dla ról technicznych (support/sysadmin/neteng)
+        if employee.role in ("support", "sysadmin", "neteng"):
+            auto_row = QHBoxLayout()
+            auto_cb = QCheckBox("Auto-naprawa")
+            auto_cb.setChecked(getattr(employee, "auto_repair_enabled", True))
+            auto_cb.setToolTip(
+                "Włącz: pracownik automatycznie naprawia awarie (szybciej)\n"
+                "ale może popełnić błąd (rzadkie) — serwer pada na 1 dzień,\n"
+                "pracownik traci level, reputacja spada."
+            )
+            auto_cb.stateChanged.connect(lambda state, e=employee: setattr(e, "auto_repair_enabled", state == 2))
+            auto_row.addWidget(auto_cb)
+            auto_row.addStretch()
+            v.addLayout(auto_row)
 
         # Stopka: pensja + zwolnij
         footer = QHBoxLayout()
