@@ -15,9 +15,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QSpinBox,
-    QTableWidget,
-    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
@@ -88,23 +87,20 @@ class InfrastructureScreen(QWidget):
         btn_row.addStretch()
         layout.addLayout(btn_row)
 
-        # Tabela serwerów
-        servers_title = QLabel("Serwery")
+        # Serwery jako karty w scrollu
+        servers_title = QLabel("🖥️ Serwery")
         servers_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #9a9a9a; margin-top: 8px;")
         layout.addWidget(servers_title)
 
-        self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["Model", "Tier", "CPU/RAM/Dysk", "Wiek", "Obciążenie", "Status"])
-        from PySide6.QtWidgets import QHeaderView
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)
-        self.table.verticalHeader().setVisible(False)
-        self.table.setAlternatingRowColors(True)
-        layout.addWidget(self.table, 1)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QFrame.NoFrame)
+        self.cards_container = QWidget()
+        from PySide6.QtWidgets import QGridLayout
+        self.cards_grid = QGridLayout(self.cards_container)
+        self.cards_grid.setSpacing(8)
+        self.scroll.setWidget(self.cards_container)
+        layout.addWidget(self.scroll, 1)
 
     def _make_bar(self, label: str) -> QFrame:
         box = QFrame()
@@ -141,28 +137,85 @@ class InfrastructureScreen(QWidget):
         # SVG slotów
         self.rack_svg.load(self._build_svg(region, state.servers).encode("utf-8"))
 
-        # Tabela serwerów
-        self.table.setRowCount(0)
+        # Serwery jako karty
+        while self.cards_grid.count():
+            item = self.cards_grid.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
         from ui.icons import server_icon
-        status_labels = {"ok": "✅ OK", "down": "🔴 Down", "maintenance": "⚠️ Serwis"}
+        cols = 3
         for i, s in enumerate(state.servers):
-            self.table.insertRow(i)
             model = get_model(s.model_id)
             model_name = model["name"] if model else s.model_id
-            self.table.setItem(i, 0, QTableWidgetItem(f"{server_icon(s.status)}  {model_name}"))
-            tier_label = {"budget": "⬇️ budget", "standard": "▶️ standard", "premium": "⭐ premium"}.get(s.quality_tier, s.quality_tier)
-            self.table.setItem(i, 1, QTableWidgetItem(tier_label))
-            self.table.setItem(i, 2, QTableWidgetItem(f"⚙️ {s.cpu_cores}c  🔋 {s.ram_gb}GB  💾 {s.disk_gb}GB {s.disk_type}"))
-            self.table.setItem(i, 3, QTableWidgetItem(f"{s.age_days} d"))
-            self.table.setItem(i, 4, QTableWidgetItem(f"CPU {s.load_cpu*100:.0f}%  RAM {s.load_ram*100:.0f}%"))
-            status_item = QTableWidgetItem(status_labels.get(s.status, s.status))
-            if s.status == "ok":
-                status_item.setForeground(QColor("#4ade80"))
-            elif s.status == "down":
-                status_item.setForeground(QColor("#ef4444"))
-            else:
-                status_item.setForeground(QColor("#facc15"))
-            self.table.setItem(i, 5, status_item)
+            card = self._build_server_card(s, model_name)
+            self.cards_grid.addWidget(card, i // cols, i % cols)
+
+        if not state.servers:
+            from PySide6.QtCore import Qt
+            empty = QLabel("Brak serwerów. Kup pierwszy serwer powyżej.")
+            empty.setStyleSheet("color: #6a6a6a; padding: 24px;")
+            empty.setAlignment(Qt.AlignCenter)
+            self.cards_grid.addWidget(empty, 0, 0, 1, cols)
+
+    def _build_server_card(self, server, model_name: str) -> QFrame:
+        card = QFrame()
+        card.setObjectName("card")
+        card.setStyleSheet(
+            "QFrame#card { background-color: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 6px; }"
+            "QFrame#card:hover { border-color: #2563eb; }"
+        )
+        v = QVBoxLayout(card)
+        v.setContentsMargins(16, 12, 16, 12)
+        v.setSpacing(6)
+
+        # Nagłówek: ikona + model + status badge
+        from ui.icons import server_icon
+        header = QHBoxLayout()
+        name_lbl = QLabel(f"{server_icon(server.status)}  {model_name}")
+        name_lbl.setStyleSheet("color: #d4d4d4; font-size: 14px; font-weight: bold;")
+        header.addWidget(name_lbl)
+        header.addStretch()
+
+        status_text = {"ok": "OK", "down": "DOWN", "maintenance": "SERWIS"}.get(server.status, server.status)
+        status_colors = {"ok": "#16a34a", "down": "#dc2626", "maintenance": "#ca8a04"}
+        status_bg = status_colors.get(server.status, "#3a3a3a")
+        status_lbl = QLabel(status_text)
+        status_lbl.setStyleSheet(
+            f"background: {status_bg}; color: white; padding: 2px 10px; "
+            f"border-radius: 8px; font-weight: bold; font-size: 11px;"
+        )
+        header.addWidget(status_lbl)
+        v.addLayout(header)
+
+        # Tier badge
+        tier_label = {"budget": "⬇️ Budget", "standard": "▶️ Standard", "premium": "⭐ Premium"}.get(
+            server.quality_tier, server.quality_tier
+        )
+        tier_lbl = QLabel(tier_label)
+        tier_lbl.setStyleSheet("color: #facc15; font-size: 12px;")
+        v.addWidget(tier_lbl)
+
+        # Parametry
+        params_lbl = QLabel(
+            f"⚙️ {server.cpu_cores}c   🔋 {server.ram_gb}GB   "
+            f"💾 {server.disk_gb}GB {server.disk_type}   📅 {server.age_days} dni"
+        )
+        params_lbl.setStyleSheet("color: #9a9a9a; font-size: 11px;")
+        v.addWidget(params_lbl)
+
+        # Obciążenie (paski)
+        if server.load_cpu > 0 or server.load_ram > 0:
+            load_lbl = QLabel(f"Obciążenie: CPU {server.load_cpu*100:.0f}%  RAM {server.load_ram*100:.0f}%")
+            color = "#4ade80"
+            if server.load_cpu > 0.8:
+                color = "#f87171"
+            elif server.load_cpu > 0.6:
+                color = "#facc15"
+            load_lbl.setStyleSheet(f"color: {color}; font-size: 11px;")
+            v.addWidget(load_lbl)
+
+        return card
 
     def _build_svg(self, region, servers) -> str:
         """Buduje SVG serwerowni z slotami."""

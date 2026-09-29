@@ -1,36 +1,37 @@
-"""Ekran Produktów — tworzenie/edycja planów i cen."""
+"""Ekran Produktów — karty planów + tworzenie/edycja."""
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
     QFormLayout,
+    QFrame,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
+    QScrollArea,
     QSpinBox,
-    QTableWidget,
-    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
-from PySide6.QtCore import Qt
 
 from core.game import Game
 from core.models import ProductPlan
 from data.products import PRODUCT_TYPES, product_name
+from ui.icons import PRODUCT_ICONS
 
 PRODUCT_LABELS = {p["id"]: p["name"] for p in PRODUCT_TYPES}
 
-# Pola wymagane per typ produktu (reszta ukryta w dialogu)
 PRODUCT_FIELDS = {
     "www":       {"cpu", "ram", "disk", "bw", "price", "sla"},
     "vps":       {"cpu", "ram", "disk", "bw", "price", "sla"},
     "dedicated": {"cpu", "ram", "disk", "bw", "price", "sla"},
-    "domain":    {"price", "sla"},  # domena nie ma dysku/CPU/RAM
+    "domain":    {"price", "sla"},
 }
 
 
@@ -40,7 +41,7 @@ class PlanDialog(QDialog):
     def __init__(self, plan: ProductPlan | None = None, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Plan produktu")
-        self.resize(380, 320)
+        self.resize(380, 360)
         self._build_ui(plan)
 
     def _build_ui(self, plan: ProductPlan | None) -> None:
@@ -49,7 +50,7 @@ class PlanDialog(QDialog):
 
         self.product = QComboBox()
         for pid, label in PRODUCT_LABELS.items():
-            self.product.addItem(label, pid)
+            self.product.addItem(f"{PRODUCT_ICONS[pid]} {label}", pid)
         self.product.currentIndexChanged.connect(self._update_field_visibility)
         form.addRow("Produkt:", self.product)
 
@@ -106,37 +107,13 @@ class PlanDialog(QDialog):
         self._update_field_visibility()
 
     def _update_field_visibility(self) -> None:
-        """Ukrywa pola niepotrzebne dla danego produktu (np. domena bez dysku)."""
         product_type = self.product.currentData()
         fields = PRODUCT_FIELDS.get(product_type, set())
-        # Mapa: nazwa pola → (widget, wiersz formularza)
-        widgets = {
-            "cpu": (self.cpu, self.cpu_row),
-            "ram": (self.ram, self.ram_row),
-            "disk": (self.disk, self.disk_row),
-            "bw": (self.bw, self.bw_row),
-            "price": (self.price, None),
-            "sla": (self.sla, None),
-        }
-        for fname, (widget, row) in widgets.items():
-            visible = fname in fields
-            widget.setVisible(visible)
-            if row is not None:
-                # Ukryj label i widget w wierszu formularza
-                label_item = self._row_label(row)
-                if label_item is not None:
-                    label_item.setVisible(visible)
-                field_item = self._row_field(row)
-                if field_item is not None:
-                    field_item.setVisible(visible)
+        for fname, widget in [
+            ("cpu", self.cpu), ("ram", self.ram), ("disk", self.disk), ("bw", self.bw),
+        ]:
+            widget.setVisible(fname in fields)
         self.adjustSize()
-
-    def _row_label(self, row):
-        # QFormLayout nie ujawnia łatwo labela; ukrywamy przez parent layout geometry
-        return None
-
-    def _row_field(self, row):
-        return None
 
     def to_plan(self, plan_id: str) -> ProductPlan:
         product_type = self.product.currentData()
@@ -154,6 +131,78 @@ class PlanDialog(QDialog):
         )
 
 
+class PlanCard(QFrame):
+    """Karta pojedynczego planu produktu."""
+
+    def __init__(self, plan: ProductPlan, on_edit, on_delete, parent=None) -> None:
+        super().__init__(parent)
+        self.plan = plan
+        self.setObjectName("card")
+        self.setStyleSheet(
+            "QFrame#card { background-color: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 6px; }"
+            "QFrame#card:hover { border-color: #2563eb; }"
+        )
+        v = QVBoxLayout(self)
+        v.setContentsMargins(16, 12, 16, 12)
+        v.setSpacing(6)
+
+        # Nagłówek: ikona + nazwa produktu
+        icon = PRODUCT_ICONS.get(plan.product_type, "📦")
+        header = QHBoxLayout()
+        name_lbl = QLabel(f"{icon}  {product_name(plan.product_type)}")
+        name_lbl.setStyleSheet("color: #d4d4d4; font-size: 15px; font-weight: bold;")
+        header.addWidget(name_lbl)
+        header.addStretch()
+        price_lbl = QLabel(f"${plan.price_monthly:.2f}/mies")
+        price_lbl.setStyleSheet("color: #4ade80; font-weight: bold; font-size: 14px;")
+        header.addWidget(price_lbl)
+        v.addLayout(header)
+
+        # Nazwa planu
+        plan_name_lbl = QLabel(plan.name)
+        plan_name_lbl.setStyleSheet("color: #60a5fa; font-size: 12px;")
+        v.addWidget(plan_name_lbl)
+
+        # Parametry
+        params = []
+        fields = PRODUCT_FIELDS.get(plan.product_type, set())
+        if "cpu" in fields:
+            params.append(f"⚙️ {plan.cpu_cores} vCPU")
+        if "ram" in fields:
+            params.append(f"🔋 {plan.ram_gb} GB RAM")
+        if "disk" in fields:
+            params.append(f"💾 {plan.disk_gb} GB")
+        if "bw" in fields:
+            params.append(f"🌐 {plan.bandwidth_mbps} Mbps")
+        params.append(f"🎯 SLA {plan.sla_target}%")
+        params_lbl = QLabel("   •   ".join(params))
+        params_lbl.setStyleSheet("color: #9a9a9a; font-size: 11px;")
+        params_lbl.setWordWrap(True)
+        v.addWidget(params_lbl)
+
+        # Akcje
+        actions = QHBoxLayout()
+        actions.addStretch()
+        btn_edit = QPushButton("Edytuj")
+        btn_edit.setStyleSheet(
+            "QPushButton { background-color: #2a2a2a; color: #d4d4d4; "
+            "border: 1px solid #3a3a3a; padding: 4px 12px; border-radius: 3px; }"
+            "QPushButton:hover { background-color: #333333; }"
+        )
+        btn_edit.clicked.connect(lambda: on_edit(plan))
+        actions.addWidget(btn_edit)
+
+        btn_del = QPushButton("Usuń")
+        btn_del.setStyleSheet(
+            "QPushButton { background-color: #7f1d1d; color: #ffffff; "
+            "border: none; padding: 4px 12px; border-radius: 3px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #991b1b; }"
+        )
+        btn_del.clicked.connect(lambda: on_delete(plan))
+        actions.addWidget(btn_del)
+        v.addLayout(actions)
+
+
 class ProductsScreen(QWidget):
     def __init__(self, game: Game, parent=None) -> None:
         super().__init__(parent)
@@ -166,9 +215,18 @@ class ProductsScreen(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(12)
 
+        # Nagłówek + przycisk dodaj
+        header = QHBoxLayout()
         title = QLabel("Produkty i plany")
         title.setObjectName("screen-title")
-        layout.addWidget(title)
+        header.addWidget(title)
+        header.addStretch()
+
+        self.btn_add = QPushButton("➕ Dodaj plan")
+        self.btn_add.setObjectName("primary")
+        self.btn_add.clicked.connect(self._on_add_plan)
+        header.addWidget(self.btn_add)
+        layout.addLayout(header)
 
         info = QLabel(
             "Twórz własne plany dla każdego produktu. "
@@ -177,28 +235,15 @@ class ProductsScreen(QWidget):
         info.setStyleSheet("color: #9a9a9a;")
         layout.addWidget(info)
 
-        btn_row = QHBoxLayout()
-        self.btn_add = QPushButton("+ Dodaj plan")
-        self.btn_add.setObjectName("primary")
-        self.btn_add.clicked.connect(self._on_add_plan)
-        btn_row.addWidget(self.btn_add)
-        btn_row.addStretch()
-        layout.addLayout(btn_row)
-
-        self.table = QTableWidget(0, 8)
-        self.table.setHorizontalHeaderLabels([
-            "Produkt", "Nazwa planu", "vCPU", "RAM", "Dysk", "Mbps", "Cena/mies", "Akcje"
-        ])
-        # Kolumny: produkty i nazwa rozciągane, reszta po treści
-        from PySide6.QtWidgets import QHeaderView
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        for c in range(2, 7):
-            self.table.horizontalHeader().setSectionResizeMode(c, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(7, QHeaderView.ResizeToContents)
-        self.table.verticalHeader().setVisible(False)
-        self.table.setAlternatingRowColors(True)
-        layout.addWidget(self.table, 1)
+        # Karty planów w scrollu
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setFrameShape(QFrame.NoFrame)
+        self.cards_container = QWidget()
+        self.cards_grid = QGridLayout(self.cards_container)
+        self.cards_grid.setSpacing(8)
+        self.scroll.setWidget(self.cards_container)
+        layout.addWidget(self.scroll, 1)
 
     def _on_add_plan(self) -> None:
         dlg = PlanDialog(parent=self)
@@ -222,38 +267,18 @@ class ProductsScreen(QWidget):
             self.refresh()
 
     def refresh(self) -> None:
-        self.table.setRowCount(0)
+        while self.cards_grid.count():
+            item = self.cards_grid.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        cols = 3
         for i, plan in enumerate(self.game.state.products):
-            self.table.insertRow(i)
-            from ui.icons import product_icon
-            self.table.setItem(i, 0, QTableWidgetItem(f"{product_icon(plan.product_type)}  {product_name(plan.product_type)}"))
-            self.table.setItem(i, 1, QTableWidgetItem(plan.name))
-            self.table.setItem(i, 2, QTableWidgetItem(f"{plan.cpu_cores}" if plan.cpu_cores else "—"))
-            self.table.setItem(i, 3, QTableWidgetItem(f"{plan.ram_gb} GB" if plan.ram_gb else "—"))
-            self.table.setItem(i, 4, QTableWidgetItem(f"{plan.disk_gb} GB" if plan.disk_gb else "—"))
-            self.table.setItem(i, 5, QTableWidgetItem(f"{plan.bandwidth_mbps}" if plan.bandwidth_mbps else "—"))
-            self.table.setItem(i, 6, QTableWidgetItem(f"${plan.price_monthly:.2f}"))
+            card = PlanCard(plan, on_edit=self._on_edit_plan, on_delete=self._on_delete_plan)
+            self.cards_grid.addWidget(card, i // cols, i % cols)
 
-            cell = QWidget()
-            h = QHBoxLayout(cell)
-            h.setContentsMargins(4, 4, 4, 4)
-            h.setSpacing(4)
-            btn_edit = QPushButton("✏️")
-            btn_edit.setToolTip("Edytuj plan")
-            btn_edit.setFixedSize(32, 28)
-            btn_edit.clicked.connect(lambda checked=False, p=plan: self._on_edit_plan(p))
-            btn_del = QPushButton("🗑️")
-            btn_del.setToolTip("Usuń plan")
-            btn_del.setObjectName("danger")
-            btn_del.setFixedSize(32, 28)
-            btn_del.clicked.connect(lambda checked=False, p=plan: self._on_delete_plan(p))
-            h.addWidget(btn_edit)
-            h.addWidget(btn_del)
-            self.table.setCellWidget(i, 7, cell)
-
-        if self.table.rowCount() == 0:
-            self.table.insertRow(0)
-            empty = QTableWidgetItem("Brak planów. Dodaj pierwszy plan, aby zacząć sprzedawać.")
-            empty.setFlags(Qt.ItemFlags(empty.flags()) & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setSpan(0, 0, 1, 8)
-            self.table.setItem(0, 0, empty)
+        if not self.game.state.products:
+            empty = QLabel("Brak planów. Dodaj pierwszy plan, aby zacząć sprzedawać.")
+            empty.setStyleSheet("color: #6a6a6a; padding: 24px;")
+            empty.setAlignment(Qt.AlignCenter)
+            self.cards_grid.addWidget(empty, 0, 0, 1, cols)
