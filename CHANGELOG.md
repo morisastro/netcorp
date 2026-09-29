@@ -4,6 +4,14 @@ Wszystkie istotne zmiany projektu NetCorp Tycoon będą dokumentowane w tym plik
 
 Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/), wersjonowanie [Semantic Versioning](https://semver.org/lang/pl/).
 
+## [0.1.2] - 2026-09-29
+
+### Dodane
+- Opcja sprzedaży/usuwania serwerów (zwrot 30% kosztu, malejący z wiekiem)
+- System samouczka — 8 kroków prowadzących przez pierwszą grę
+- Samouczek auto-pokazuje się przy nowej grze (można pominąć)
+- Przycisk "Samouczek" w topbarze (do ponownego uruchomienia)
+
 ## [0.1.1] - 2026-09-29
 
 ### Dodane

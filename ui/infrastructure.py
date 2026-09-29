@@ -215,7 +215,55 @@ class InfrastructureScreen(QWidget):
             load_lbl.setStyleSheet(f"color: {color}; font-size: 11px;")
             v.addWidget(load_lbl)
 
+        # Przycisk sprzedaj/usuń serwer (zwrot części kosztów)
+        from data.server_models import get_model, get_price
+        model = get_model(server.model_id)
+        if model:
+            base_price = get_price(server.model_id, server.quality_tier) or 0
+            age_factor = max(0.1, 1.0 - server.age_days / 1000)
+            sell_value = base_price * 0.3 * age_factor
+        else:
+            sell_value = 0
+        sell_text = f"Sprzedaj (${sell_value:.0f})" if sell_value > 0 else "Usuń"
+
+        actions = QHBoxLayout()
+        actions.addStretch()
+        btn_sell = QPushButton(sell_text)
+        btn_sell.setStyleSheet(
+            "QPushButton { background-color: #7f1d1d; color: #ffffff; "
+            "border: none; padding: 4px 12px; border-radius: 3px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #991b1b; }"
+        )
+        btn_sell.clicked.connect(lambda checked=False, s=server, val=sell_value: self._on_sell_server(s, val))
+        actions.addWidget(btn_sell)
+        v.addLayout(actions)
+
         return card
+
+    def _on_sell_server(self, server, sell_value: float) -> None:
+        """Sprzedaje/usuwa serwer (zwrot części kosztów)."""
+        from PySide6.QtWidgets import QMessageBox
+        msg = f"Czy na pewno sprzedać serwer {server.id}?\n"
+        if sell_value > 0:
+            msg += f"Zwrot: ${sell_value:.2f}"
+        else:
+            msg += "Brak zwrotu (stary serwer)."
+        reply = QMessageBox.question(
+            self, "Sprzedaż serwera", msg, QMessageBox.Yes | QMessageBox.No
+        )
+        if reply != QMessageBox.Yes:
+            return
+        if server in self.game.state.servers:
+            self.game.state.servers.remove(server)
+            self.game.state.cash += sell_value
+            for region in self.game.state.regions:
+                if region.id == server.region_id:
+                    region.slots_used = max(0, region.slots_used - 1)
+                    model = get_model(server.model_id)
+                    if model:
+                        region.power_kw_used = max(0, region.power_kw_used - (model.get("tdp_w", 200) / 1000.0))
+                    break
+            self.refresh()
 
     def _build_svg(self, region, servers) -> str:
         """Buduje SVG serwerowni z slotami."""

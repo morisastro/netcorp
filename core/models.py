@@ -278,6 +278,8 @@ class GameState:
     game_mode: str = "sandbox"
     # Modyfikator awaryjności (z trybu gry, domyślnie 1.0)
     failure_multiplier: float = 1.0
+    # Czy samouczek już pokazany (False = pokaż przy nowej grze)
+    tutorial_shown: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -300,6 +302,7 @@ class GameState:
             "version": self.version,
             "game_mode": self.game_mode,
             "failure_multiplier": self.failure_multiplier,
+            "tutorial_shown": self.tutorial_shown,
         }
 
     @classmethod
@@ -324,4 +327,5 @@ class GameState:
             version=d.get("version", "0.1.0"),
             game_mode=d.get("game_mode", "sandbox"),
             failure_multiplier=d.get("failure_multiplier", 1.0),
+            tutorial_shown=d.get("tutorial_shown", False),
         )

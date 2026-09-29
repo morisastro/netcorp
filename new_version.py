@@ -34,7 +34,7 @@ def update_version(new_version: str) -> None:
         print(f"BŁĄD: nie znaleziono APP_VERSION w {SETTINGS}")
         sys.exit(1)
     SETTINGS.write_text(new_content, encoding="utf-8")
-    print(f"✓ Zaktualizowano APP_VERSION → {new_version}")
+    print(f"[OK] Zaktualizowano APP_VERSION -> {new_version}")
 
 
 def run(cmd: list[str], check: bool = True) -> int:

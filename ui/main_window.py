@@ -89,6 +89,12 @@ class MainWindow(QWidget):
 
         root.addLayout(right, 1)
 
+        # Pokaż samouczek jeśli nowa gra (tutorial_shown == False)
+        if not self.game.state.tutorial_shown:
+            # Opóźnij pokazanie aż okno się wyrenderuje
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(200, self._maybe_show_tutorial)
+
     def _build_sidebar(self) -> QWidget:
         sidebar = QFrame()
         sidebar.setObjectName("sidebar")
@@ -154,6 +160,10 @@ class MainWindow(QWidget):
         self.btn_save = QPushButton("💾 Zapisz")
         self.btn_save.clicked.connect(self._on_save)
         layout.addWidget(self.btn_save)
+
+        self.btn_tutorial = QPushButton("🎓 Samouczek")
+        self.btn_tutorial.clicked.connect(self._on_show_tutorial)
+        layout.addWidget(self.btn_tutorial)
 
         # Banner aktualizacji (ukryty domyślnie)
         self.update_banner = QFrame()
@@ -300,3 +310,21 @@ class MainWindow(QWidget):
             QMessageBox.information(self, "Zapisano", f"Partia zapisana jako „{name.strip()}”.")
         except Exception as e:
             QMessageBox.critical(self, "Błąd zapisu", f"Nie udało się zapisać:\n{e}")
+
+    def _on_show_tutorial(self) -> None:
+        """Pokazuje samouczek."""
+        from ui.tutorial import TutorialDialog
+        def _done():
+            self.game.state.tutorial_shown = True
+            try:
+                from persistence import save_load
+                save_load.autosave(self.game)
+            except Exception:
+                pass
+        dlg = TutorialDialog(on_finished=_done, parent=self)
+        dlg.exec()
+
+    def _maybe_show_tutorial(self) -> None:
+        """Auto-pokaz samouczka przy nowej grze."""
+        if not self.game.state.tutorial_shown:
+            self._on_show_tutorial()
