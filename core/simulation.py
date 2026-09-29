@@ -160,11 +160,12 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     state.tickets_resolved_today = tickets_resolved
     state.tickets_open = ticket_result["leftover"]
 
-    # Nierozwiązane tickety → spadek reputacji
+    # Nierozwiązane tickety → spadek reputacji (lżejszy)
     if state.tickets_open > 0:
-        state.reputation = max(0, state.reputation - state.tickets_open * 0.2)
+        # Max -2/dzień niezależnie od liczby ticketów (było -0.2 per ticket = -10+)
+        state.reputation = max(0, state.reputation - min(2.0, state.tickets_open * 0.1))
     elif tickets_resolved > 0:
-        state.reputation = min(100, state.reputation + 0.1)
+        state.reputation = min(100, state.reputation + 0.5)  # +0.5 za rozwiązane (było +0.1)
 
     # ---- Aktualizacja gotówki ----
     state.cash += income - expenses
@@ -181,9 +182,9 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
 
     # ---- Reputacja z awarii ----
     if state.failures_active:
-        state.reputation = max(0, state.reputation - len(state.failures_active) * 0.5)
+        state.reputation = max(0, state.reputation - len(state.failures_active) * 0.3)  # -0.3 per (było -0.5)
     elif total_active > 0 and not state.failures_active and tickets_resolved > 0:
-        state.reputation = min(100, state.reputation + 0.1)
+        state.reputation = min(100, state.reputation + 0.5)  # +0.5 (było +0.1)
 
     # ---- Kamienie milowe ----
     total = sum(c.count for c in state.customers)

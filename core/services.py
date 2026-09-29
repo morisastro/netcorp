@@ -171,18 +171,21 @@ def auto_resolve_tickets(state: Any, rng: Any) -> dict[str, int]:
     """
     result = {"resolved": 0, "leftover": 0}
 
-    # Pojemność per rola
     cap_support = employee_capacity(state, "support")
     cap_sysadmin = employee_capacity(state, "sysadmin")
     cap_neteng = employee_capacity(state, "neteng")
 
-    # Sortuj tickety po priorytecie (wysoki najpierw)
+    # Jeśli brak specjalisty roli, support może przejąć (z mniejszą wydajnością)
+    if cap_neteng == 0 and cap_support > 0:
+        cap_neteng = cap_support // 2  # support robi pół pracy neteng
+    if cap_sysadmin == 0 and cap_support > 0:
+        cap_sysadmin = cap_support // 2
+
     open_tickets = [t for t in state.tickets if t.status == "open"]
     open_tickets.sort(key=lambda t: -t.priority)
 
     resolved_count = 0
     for ticket in open_tickets:
-        # Wybierz pracownika wg typu ticketa
         if ticket.type in ("support", "sla"):
             cap = cap_support
         elif ticket.type == "failure":
@@ -193,7 +196,6 @@ def auto_resolve_tickets(state: Any, rng: Any) -> dict[str, int]:
             cap = cap_support
 
         if cap > 0:
-            # Rozwiąż ticket (zużyj 1 pojemności)
             ticket.status = "resolved"
             ticket.resolved_day = state.day
             if ticket.type in ("support", "sla"):
@@ -203,7 +205,6 @@ def auto_resolve_tickets(state: Any, rng: Any) -> dict[str, int]:
             elif ticket.type == "network":
                 cap_neteng -= 1
             resolved_count += 1
-        # else: brak pracownika — ticket zostaje otwarty
 
     result["resolved"] = resolved_count
     result["leftover"] = sum(1 for t in state.tickets if t.status == "open")
