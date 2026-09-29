@@ -177,6 +177,12 @@ class FailuresScreen(QWidget):
             failure.status = "ignored"
         else:
             failure.status = "resolved"
+            # Przywróć serwer do działania (jeśli awaria dotyczyła serwera)
+            if failure.server_id:
+                for server in self.game.state.servers:
+                    if server.id == failure.server_id:
+                        server.status = "ok"
+                        break
         # Przenieś do historii
         if failure in self.game.state.failures_active:
             self.game.state.failures_active.remove(failure)

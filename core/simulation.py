@@ -270,9 +270,12 @@ def _generate_failures(state: Any, rng: Any) -> list:
             )
             if failure_type == "ddos":
                 failure.server_id = None
+                # DDoS nie ustawia serwera na down (atak na sieć, nie sprzęt)
+                # Serwery działają ale mogą nie być dostępne z zewnątrz
+            else:
+                server.status = "down"
             state.failures_active.append(failure)
             new_failures.append(failure)
-            server.status = "down"
 
     return new_failures
 
