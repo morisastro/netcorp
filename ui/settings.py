@@ -58,6 +58,23 @@ class SettingsScreen(QWidget):
         self.btn_check.clicked.connect(self._on_check_update)
         layout.addWidget(self.btn_check)
 
+        # Sekcja: GitHub
+        gh_title = QLabel("GitHub")
+        gh_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #60a5fa; margin-top: 12px;")
+        layout.addWidget(gh_title)
+        gh_row = QHBoxLayout()
+        self.btn_github_repo = QPushButton("📂  Repozytorium")
+        self.btn_github_repo.clicked.connect(lambda: self._open_url("https://github.com/morisastro/netcorp"))
+        gh_row.addWidget(self.btn_github_repo)
+        self.btn_github_releases = QPushButton("🏷️  Releases")
+        self.btn_github_releases.clicked.connect(lambda: self._open_url("https://github.com/morisastro/netcorp/releases"))
+        gh_row.addWidget(self.btn_github_releases)
+        self.btn_github_issues = QPushButton("🐛  Zgłoś problem")
+        self.btn_github_issues.clicked.connect(lambda: self._open_url("https://github.com/morisastro/netcorp/issues"))
+        gh_row.addWidget(self.btn_github_issues)
+        gh_row.addStretch()
+        layout.addLayout(gh_row)
+
         # Sekcja: licencja
         lic_title = QLabel("Licencja")
         lic_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #60a5fa; margin-top: 12px;")
@@ -129,3 +146,10 @@ class SettingsScreen(QWidget):
 
     def refresh(self) -> None:
         pass  # ustawienia statyczne
+
+    def _open_url(self, url: str) -> None:
+        if not url:
+            return
+        from PySide6.QtCore import QUrl
+        from PySide6.QtGui import QDesktopServices
+        QDesktopServices.openUrl(QUrl(url))

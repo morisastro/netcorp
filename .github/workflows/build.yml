@@ -51,7 +51,6 @@ jobs:
         id: ver
         shell: bash
         run: |
-          # ref_name = v0.1.0 → version = 0.1.0
           VERSION="${GITHUB_REF_NAME#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "artifact=netcorp-tycoon-v${VERSION}-${{ matrix.platform }}.zip" >> $GITHUB_OUTPUT
@@ -75,10 +74,43 @@ jobs:
           name: ${{ steps.ver.outputs.artifact }}
           path: ${{ steps.ver.outputs.artifact }}
 
-      - name: Upload to release
-        if: startsWith(github.ref, 'refs/tags/v')
+  release:
+    name: Create release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: ver
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Read changelog
+        id: changelog
+        run: |
+          # Wczytaj changelog z CHANGELOG.md (sekcja dla danej wersji lub caly plik)
+          if [ -f CHANGELOG.md ]; then
+            BODY=$(cat CHANGELOG.md)
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "$BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "body=Release v${VERSION}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.ver.outputs.artifact }}
-          generate_release_notes: true
+          files: artifacts/*.zip
           name: NetCorp Tycoon v${{ steps.ver.outputs.version }}
+          body: ${{ steps.changelog.outputs.body }}
+          generate_release_notes: false
