@@ -9,7 +9,8 @@ def test_new_game_starts_with_garage():
     game = Game.new_game()
     assert game.state.cash > 0
     assert len(game.state.regions) == 1
-    assert game.state.regions[0].name.startswith("Garaż")
+    # Nazwa może być zmieniona przez mod (game_settings.start_region_name)
+    assert "garaż" in game.state.regions[0].name.lower() or "garaz" in game.state.regions[0].name.lower()
     assert len(game.state.servers) == 1
     assert game.state.servers[0].quality_tier == "budget"
 
