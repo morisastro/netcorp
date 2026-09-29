@@ -184,6 +184,49 @@ class MainMenuWindow(QWidget):
         hint.setStyleSheet("color: #6a6a6a;")
         layout.addWidget(hint)
 
+        # Panel nickname / nazwa firmy (powolne wprowadzanie do MP)
+        from PySide6.QtWidgets import QFrame, QLineEdit, QHBoxLayout
+        nick_frame = QFrame()
+        nick_frame.setObjectName("card")
+        nick_frame.setStyleSheet(
+            "QFrame#card { background-color: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 4px; }"
+        )
+        nick_layout = QVBoxLayout(nick_frame)
+        nick_layout.setContentsMargins(16, 12, 16, 12)
+        nick_layout.setSpacing(6)
+
+        nick_title = QLabel("👤 Twój nickname / nazwa firmy")
+        nick_title.setStyleSheet("color: #60a5fa; font-weight: bold;")
+        nick_layout.addWidget(nick_title)
+
+        nick_hint = QLabel("W przyszłości (multiplayer) inni gracze zobaczą tę nazwę w rankingach.")
+        nick_hint.setStyleSheet("color: #6a6a6a; font-size: 11px;")
+        nick_hint.setWordWrap(True)
+        nick_layout.addWidget(nick_hint)
+
+        nick_row = QHBoxLayout()
+        nick_row.setSpacing(8)
+        nick_row.addWidget(QLabel("Nickname:"))
+        self.nick_input = QLineEdit()
+        self.nick_input.setPlaceholderText("np. morisastro")
+        self.nick_input.setMaximumWidth(200)
+        nick_row.addWidget(self.nick_input)
+        nick_row.addStretch()
+        nick_layout.addLayout(nick_row)
+
+        comp_row = QHBoxLayout()
+        comp_row.setSpacing(8)
+        comp_row.addWidget(QLabel("Firma:"))
+        self.company_input = QLineEdit()
+        self.company_input.setPlaceholderText("np. NetCorp")
+        self.company_input.setMaximumWidth(200)
+        self.company_input.setText("NetCorp")
+        comp_row.addWidget(self.company_input)
+        comp_row.addStretch()
+        nick_layout.addLayout(comp_row)
+
+        layout.addWidget(nick_frame)
+
         from PySide6.QtWidgets import QFrame, QPushButton as QP
         self.mode_buttons: dict[str, QP] = {}
         for mode in GAME_MODES:
@@ -337,13 +380,19 @@ class MainMenuWindow(QWidget):
 
     def _on_start_mode(self, mode: dict) -> None:
         from core.game import Game
+        import uuid
         game = Game.new_game()
         # Dostosuj do trybu
         game.state.cash = mode["cash"]
         game.state.reputation = mode["reputation"]
-        # Zapisz modyfikator awaryjności w stanie (do użycia w symulacji)
         game.state.game_mode = mode["id"]
         game.state.failure_multiplier = mode["failure_mult"]
+        # Nickname / nazwa firmy
+        nick = self.nick_input.text().strip() or "Player"
+        company = self.company_input.text().strip() or "NetCorp"
+        game.state.player_nick = nick
+        game.state.company_name = company
+        game.state.player_id = uuid.uuid4().hex  # unikalne ID (do MP w przyszłości)
         # Autosave nowej gry
         try:
             save_load.autosave(game)

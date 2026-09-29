@@ -67,6 +67,16 @@ def load_mods() -> dict[str, Any]:
         "start": {},
         "marketing": {},
         "employee": {},
+        # Nowe kategorie:
+        "game_settings": {},
+        "events": [],
+        "milestones": [],
+        "website_blocks": [],
+        "segments": [],
+        "modifiers": {},
+        "tutorial_steps": [],
+        "loan": {},
+        "sla_penalties": {},
     }
     for mod_info in list_mods():
         if not mod_info.get("enabled", True):
@@ -95,6 +105,25 @@ def load_mods() -> dict[str, Any]:
                 merged["marketing"].update(data["marketing"])
             if "employee" in data:
                 merged["employee"].update(data["employee"])
+            # Nowe:
+            if "game_settings" in data:
+                merged["game_settings"].update(data["game_settings"])
+            if "events" in data:
+                merged["events"].extend(data["events"])
+            if "milestones" in data:
+                merged["milestones"].extend(data["milestones"])
+            if "website_blocks" in data:
+                merged["website_blocks"].extend(data["website_blocks"])
+            if "segments" in data:
+                merged["segments"].extend(data["segments"])
+            if "modifiers" in data:
+                merged["modifiers"].update(data["modifiers"])
+            if "tutorial_steps" in data:
+                merged["tutorial_steps"].extend(data["tutorial_steps"])
+            if "loan" in data:
+                merged["loan"].update(data["loan"])
+            if "sla_penalties" in data:
+                merged["sla_penalties"].update(data["sla_penalties"])
         except (json.JSONDecodeError, OSError):
             continue
     return merged
@@ -194,5 +223,72 @@ def apply_mods(state: Any) -> dict[str, Any]:
             names.LAST_NAMES = mods["names"]["last_names"]
         if "server_names" in mods["names"]:
             names.SERVER_NAME_POOL = mods["names"]["server_names"]
+
+    # 10. Loan — parametry pożyczki
+    if mods["loan"]:
+        # Zapisz w stanie (debt_daily_interest już jest w GameState)
+        if "interest_rate" in mods["loan"]:
+            state.debt_daily_interest = mods["loan"]["interest_rate"]
+        if "rate_per_customer" in mods["loan"]:
+            # Zapisz jako atrybut pomocniczy (do użycia w ui/finances.py)
+            state.loan_rate_per_customer = mods["loan"]["rate_per_customer"]
+        if "min_customers" in mods["loan"]:
+            state.loan_min_customers = mods["loan"]["min_customers"]
+
+    # 11. SLA penalties — kary za naruszenia
+    if mods["sla_penalties"]:
+        from data import balance as balance_mod
+        for key, value in mods["sla_penalties"].items():
+            if hasattr(balance_mod, key):
+                setattr(balance_mod, key, value)
+
+    # 12. Segments — własne segmenty klientów (nadpisuje domyślne)
+    if mods["segments"]:
+        # Zapisz w state jako atrybut pomocniczy
+        state.custom_segments = mods["segments"]
+
+    # 13. Game settings — ustawienia rozgrywki
+    if mods["game_settings"]:
+        if "start_region_name" in mods["game_settings"]:
+            # Zmień nazwę startowego regionu
+            if state.regions:
+                state.regions[0].name = mods["game_settings"]["start_region_name"]
+        if "start_slots" in mods["game_settings"]:
+            if state.regions:
+                state.regions[0].slots_total = mods["game_settings"]["start_slots"]
+        if "start_power_kw" in mods["game_settings"]:
+            if state.regions:
+                state.regions[0].power_kw_total = mods["game_settings"]["start_power_kw"]
+        if "start_cooling" in mods["game_settings"]:
+            if state.regions:
+                state.regions[0].cooling_factor = mods["game_settings"]["start_cooling"]
+
+    # 14. Modifiers — globalne modyfikatory (mnożniki)
+    if mods["modifiers"]:
+        if "income_mult" in mods["modifiers"]:
+            state.income_multiplier = mods["modifiers"]["income_mult"]
+        if "expense_mult" in mods["modifiers"]:
+            state.expense_multiplier = mods["modifiers"]["expense_mult"]
+        if "churn_mult" in mods["modifiers"]:
+            state.churn_multiplier = mods["modifiers"]["churn_mult"]
+
+    # 15. Website blocks — dodatkowe bloki strony
+    if mods["website_blocks"]:
+        # Zapisz w state jako atrybut pomocniczy (UI może z tego korzystać)
+        state.custom_website_blocks = mods["website_blocks"]
+
+    # 16. Tutorial steps — własne kroki samouczka
+    if mods["tutorial_steps"]:
+        state.custom_tutorial_steps = mods["tutorial_steps"]
+        # Jeśli ma nowe kroki, pokaż ponownie samouczek
+        state.tutorial_shown = False
+
+    # 17. Events — własne wydarzenia (do implementacji w symulacji)
+    if mods["events"]:
+        state.custom_events = mods["events"]
+
+    # 18. Milestones — własne kamienie milowe
+    if mods["milestones"]:
+        state.custom_milestones = mods["milestones"]
 
     return applied

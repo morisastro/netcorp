@@ -358,6 +358,26 @@ class GameState:
     debt_daily_interest: float = 0.001  # 0.1% dziennie
     # Flaga bankructwa (game over)
     bankrupt: bool = False
+    # ---- Pola z modów (nadpisywane przez apply_mods) ----
+    # Modyfikatory globalne (mnożniki)
+    income_multiplier: float = 1.0
+    expense_multiplier: float = 1.0
+    churn_multiplier: float = 1.0
+    # Parametry pożyczki z modu
+    loan_rate_per_customer: float = 0.5
+    loan_min_customers: int = 5
+    # Własne dane z modów
+    custom_segments: list = field(default_factory=list)
+    custom_website_blocks: list = field(default_factory=list)
+    custom_tutorial_steps: list = field(default_factory=list)
+    custom_events: list = field(default_factory=list)
+    custom_milestones: list = field(default_factory=list)
+    # ---- Multiplayer (powolne wprowadzanie) ----
+    # Nickname gracza / nazwa firmy
+    player_nick: str = ""
+    company_name: str = "NetCorp"
+    # ID gracza (do multiplayer w przyszłości)
+    player_id: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -386,6 +406,19 @@ class GameState:
             "debt": self.debt,
             "debt_daily_interest": self.debt_daily_interest,
             "bankrupt": self.bankrupt,
+            "income_multiplier": self.income_multiplier,
+            "expense_multiplier": self.expense_multiplier,
+            "churn_multiplier": self.churn_multiplier,
+            "loan_rate_per_customer": self.loan_rate_per_customer,
+            "loan_min_customers": self.loan_min_customers,
+            "custom_segments": list(self.custom_segments),
+            "custom_website_blocks": list(self.custom_website_blocks),
+            "custom_tutorial_steps": list(self.custom_tutorial_steps),
+            "custom_events": list(self.custom_events),
+            "custom_milestones": list(self.custom_milestones),
+            "player_nick": self.player_nick,
+            "company_name": self.company_name,
+            "player_id": self.player_id,
         }
 
     @classmethod
@@ -416,4 +449,17 @@ class GameState:
             debt=d.get("debt", 0.0),
             debt_daily_interest=d.get("debt_daily_interest", 0.001),
             bankrupt=d.get("bankrupt", False),
+            income_multiplier=d.get("income_multiplier", 1.0),
+            expense_multiplier=d.get("expense_multiplier", 1.0),
+            churn_multiplier=d.get("churn_multiplier", 1.0),
+            loan_rate_per_customer=d.get("loan_rate_per_customer", 0.5),
+            loan_min_customers=d.get("loan_min_customers", 5),
+            custom_segments=list(d.get("custom_segments", [])),
+            custom_website_blocks=list(d.get("custom_website_blocks", [])),
+            custom_tutorial_steps=list(d.get("custom_tutorial_steps", [])),
+            custom_events=list(d.get("custom_events", [])),
+            custom_milestones=list(d.get("custom_milestones", [])),
+            player_nick=d.get("player_nick", ""),
+            company_name=d.get("company_name", "NetCorp"),
+            player_id=d.get("player_id", ""),
         )

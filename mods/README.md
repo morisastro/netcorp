@@ -6,92 +6,114 @@ Ten folder zawiera mody do gry. Mody to pliki `.json` nadpisujące dane gry.
 
 Utwórz plik `.json` w tym folderze. Przykład — patrz `przyklad-wiecej-klientow.json`.
 
-## Wszystkie opcje modowania
+## Wszystkie 18 kategorii modowania
 
-### `balance` — stałe balansu (z `data/balance.py`)
-| Klucz | Opis | Domyślnie |
-|-------|------|-----------|
-| `FAILURE_BASE_DAILY` | Bazowa szansa awarii/serwer/dzień | 0.02 |
-| `FAILURE_MOD_OVERLOAD_CPU` | Mnożnik gdy CPU > 80% | 3.0 |
-| `FAILURE_MOD_AGE` | Mnożnik gdy serwer stary | 1.5 |
-| `MARKETING_COST_PER_NEW_CUSTOMER` | $ za 1 klienta z marketingu | 15.0 |
-| `MARKETING_BASELINE_NEW_CUSTOMERS` | Bazowy przyrost/dzień | 3 |
-| `EMPLOYEE_SALARY_PER_LEVEL` | Pensja = poziom × to | 50.0 |
-| `EMPLOYEE_CAPACITY_PER_LEVEL` | Pojemność tickotów = poziom × to | 10 |
-| `LICENSE_DAILY` | Koszt licencji/dzień | 5.0 |
-| `POWER_PRICE_PER_KWH` | Cena prądu/kWh | 0.15 |
-| `NETWORK_PRICE_PER_MBPS_DAILY` | Cena łącza/Mbps/dzień | 0.05 |
-| `CHURN_BASE_MONTHLY` | Bazowy churn/mies | 0.05 |
-| `SLA_PENALTY_PER_HOUR_HOBBYIST` | Kara SLA/h hobbyist | 5.0 |
-| `SLA_PENALTY_PER_HOUR_SMALL_BIZ` | Kara SLA/h small biz | 20.0 |
-| `TIER_MTBF.budget` | MTBF budget tier (godziny) | 4000 |
-| `TIER_MTBF.standard` | MTBF standard tier | 10000 |
-| `TIER_MTBF.premium` | MTBF premium tier | 25000 |
+### 1. `balance` — stałe balansu (z `data/balance.py`)
+16 stałych: FAILURE_BASE_DAILY, MARKETING_COST_PER_NEW_CUSTOMER, EMPLOYEE_SALARY_PER_LEVEL, POWER_PRICE_PER_KWH, CHURN_BASE_MONTHLY, SLA_PENALTY_PER_HOUR_*, itp.
 
-### `start` — start gry
+### 2. `start` — start gry
 ```json
 "start": { "cash": 20000, "reputation": 70 }
 ```
 
-### `server_models` — dodatkowe modele serwerów
+### 3. `server_models` — dodatkowe modele serwerów
 ```json
-"server_models": [
-  {
-    "id": "turbo_x1",
-    "name": "Turbo X1",
-    "cpu_cores": 24,
-    "ram_gb": 48,
-    "disk_gb": 2000,
-    "disk_type": "nvme",
-    "prices": {"budget": 3000, "standard": 5000, "premium": 8000},
-    "tdp_w": 350
-  }
-]
+"server_models": [{ "id": "turbo_x1", "name": "Turbo X1", "cpu_cores": 24, ... }]
 ```
 
-### `tlds` — dodatkowe domeny
+### 4. `tlds` — dodatkowe domeny
 ```json
-"tlds": [
-  {"id": "xyz", "name": ".xyz", "register": 5.0, "renew": 5.0, "popularity": 0.2}
-]
+"tlds": [{ "id": "xyz", "name": ".xyz", "register": 5.0, ... }]
 ```
 
-### `products` — gotowe plany produktów dodawane do nowej gry
+### 5. `products` — gotowe plany dodawane do nowej gry
 ```json
-"products": [
-  {
-    "id": "mod_vps_pro",
-    "product_type": "vps",
-    "name": "VPS Pro",
-    "cpu_cores": 8, "ram_gb": 16, "disk_gb": 200,
-    "bandwidth_mbps": 1000, "price_monthly": 49.99, "sla_target": 99.99
-  }
-]
+"products": [{ "id": "mod_vps", "product_type": "vps", "name": "VPS Pro", ... }]
 ```
 
-### `failure_types` — wagi typów awarii
+### 6. `failure_types` — wagi typów awarii
 ```json
 "failure_types": { "disk": 0.10, "ddos": 0.30 }
 ```
-(Domyślne: `{"disk": 0.25, "cpu_overload": 0.20, "overheat": 0.15, "power": 0.15, "network": 0.15, "ddos": 0.10}`)
 
-### `marketing` — ustawienia marketingu
+### 7. `names` — imiona i nazwy serwerów
+```json
+"names": { "first_names": [...], "last_names": [...], "server_names": [...] }
+```
+
+### 8. `marketing` — ustawienia marketingu
 ```json
 "marketing": { "cost_per_customer": 8.0, "baseline_new": 4 }
 ```
 
-### `employee` — ustawienia pracowników
+### 9. `employee` — ustawienia pracowników
 ```json
 "employee": { "salary_per_level": 40, "capacity_per_level": 15 }
 ```
 
-### `names` — imiona i nazwy serwerów
+### 10. `loan` — parametry pożyczki (NOWE)
 ```json
-"names": {
-  "first_names": ["Jan", "Maria"],
-  "last_names": ["Kowalski", "Nowak"],
-  "server_names": ["MÓJ-SERWER"]
+"loan": { "interest_rate": 0.002, "rate_per_customer": 0.8, "min_customers": 3 }
+```
+
+### 11. `sla_penalties` — kary za naruszenia SLA (NOWE)
+```json
+"sla_penalties": {
+  "SLA_PENALTY_PER_HOUR_HOBBYIST": 10.0,
+  "SLA_PENALTY_PER_HOUR_SMALL_BIZ": 50.0,
+  "SLA_PENALTY_PER_HOUR_ENTERPRISE": 200.0
 }
+```
+
+### 12. `segments` — własne segmenty klientów (NOWE)
+```json
+"segments": [
+  {"id": "budget", "name": "Budżetowy", "churn": 0.08, "sla": 99.0},
+  {"id": "pro", "name": "Pro", "churn": 0.03, "sla": 99.9}
+]
+```
+
+### 13. `game_settings` — ustawienia startowe gry (NOWE)
+```json
+"game_settings": {
+  "start_region_name": "Mój garaż",
+  "start_slots": 5,
+  "start_power_kw": 3.0,
+  "start_cooling": 0.8
+}
+```
+
+### 14. `modifiers` — globalne modyfikatory (mnożniki) (NOWE)
+```json
+"modifiers": { "income_mult": 1.5, "expense_mult": 0.8, "churn_mult": 0.7 }
+```
+
+### 15. `website_blocks` — dodatkowe bloki strony (NOWE)
+```json
+"website_blocks": [
+  {"type": "testimonials", "name": "Referencje", "bonus": 0.12}
+]
+```
+
+### 16. `tutorial_steps` — własne kroki samouczka (NOWE)
+```json
+"tutorial_steps": [
+  {"title": "Witaj!", "body": "To krok samouczka z modu."}
+]
+```
+
+### 17. `events` — własne wydarzenia (NOWE)
+```json
+"events": [
+  {"type": "boom", "name": "Boom rynkowy", "effect": "+20% klientów na 5 dni"}
+]
+```
+
+### 18. `milestones` — własne kamienie milowe (NOWE)
+```json
+"milestones": [
+  {"id": "mega_dc", "customers": 5000, "name": "Mega DC (mod)"}
+]
 ```
 
 ## Włączanie/wyłączanie

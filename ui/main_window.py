@@ -137,6 +137,11 @@ class MainWindow(QWidget):
         self.date_label.setObjectName("kpi")
         layout.addWidget(self.date_label)
 
+        # Nickname / firma
+        self.nick_label = QLabel("👤 —")
+        self.nick_label.setStyleSheet("color: #60a5fa; padding: 8px 12px; font-weight: bold;")
+        layout.addWidget(self.nick_label)
+
         layout.addStretch()
 
         self.kpi_cash = QLabel("💰 Gotówka: $5,000.00")
@@ -280,6 +285,11 @@ class MainWindow(QWidget):
         """Odświeża topbar i aktywny ekran."""
         state = self.game.state
         self.date_label.setText(f"📅 {self.game.date_label()}")
+        # Nickname / firma
+        nick_text = f"👤 {state.player_nick}" if state.player_nick else "👤 —"
+        if state.company_name:
+            nick_text += f"  🏢 {state.company_name}"
+        self.nick_label.setText(nick_text)
         # Gotówka: czerwono gdy ujemna lub bankrut
         cash_color = "#f87171" if state.cash < 0 else "#d4d4d4"
         bankrupt_marker = " ⛔ BANKRUT" if state.bankrupt else ""

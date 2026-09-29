@@ -1,9 +1,9 @@
 {
-  "name": "Przykładowy mod — Więcej klientów",
+  "name": "Przykładowy mod — Kompleksowy",
   "version": "1.0",
   "author": "NetCorp",
   "enabled": true,
-  "description": "Kompleksowy mod demonstrujący wszystkie opcje modowania. Dostosuj wartości do swoich potrzeb.",
+  "description": "Demonstruje wszystkie opcje modowania (18 kategorii). Dostosuj wartości do swoich potrzeb.",
   "balance": {
     "MARKETING_COST_PER_NEW_CUSTOMER": 10.0,
     "MARKETING_BASELINE_NEW_CUSTOMERS": 5,
@@ -14,26 +14,14 @@
     "POWER_PRICE_PER_KWH": 0.10,
     "CHURN_BASE_MONTHLY": 0.03
   },
-  "start": {
-    "cash": 20000,
-    "reputation": 70
-  },
-  "marketing": {
-    "cost_per_customer": 8.0,
-    "baseline_new": 4
-  },
-  "employee": {
-    "salary_per_level": 40,
-    "capacity_per_level": 15
-  },
+  "start": { "cash": 20000, "reputation": 70 },
+  "marketing": { "cost_per_customer": 8.0, "baseline_new": 4 },
+  "employee": { "salary_per_level": 40, "capacity_per_level": 15 },
   "server_models": [
     {
       "id": "turbo_x1",
       "name": "Turbo X1 (mod)",
-      "cpu_cores": 24,
-      "ram_gb": 48,
-      "disk_gb": 2000,
-      "disk_type": "nvme",
+      "cpu_cores": 24, "ram_gb": 48, "disk_gb": 2000, "disk_type": "nvme",
       "prices": {"budget": 3000, "standard": 5000, "premium": 8000},
       "tdp_w": 350
     }
@@ -44,23 +32,50 @@
   ],
   "products": [
     {
-      "id": "mod_vps_pro",
-      "product_type": "vps",
-      "name": "VPS Pro (mod)",
-      "cpu_cores": 8,
-      "ram_gb": 16,
-      "disk_gb": 200,
-      "bandwidth_mbps": 1000,
-      "price_monthly": 49.99,
-      "sla_target": 99.99
+      "id": "mod_vps_pro", "product_type": "vps", "name": "VPS Pro (mod)",
+      "cpu_cores": 8, "ram_gb": 16, "disk_gb": 200, "bandwidth_mbps": 1000,
+      "price_monthly": 49.99, "sla_target": 99.99
     }
   ],
-  "failure_types": {
-    "disk": 0.10,
-    "ddos": 0.30
-  },
+  "failure_types": { "disk": 0.10, "ddos": 0.30 },
   "names": {
     "first_names": ["ModUser", "ModAdmin"],
     "server_names": ["MOD-SERVER"]
-  }
+  },
+  "loan": {
+    "interest_rate": 0.002,
+    "rate_per_customer": 0.8,
+    "min_customers": 3
+  },
+  "sla_penalties": {
+    "SLA_PENALTY_PER_HOUR_HOBBYIST": 10.0,
+    "SLA_PENALTY_PER_HOUR_SMALL_BIZ": 50.0
+  },
+  "segments": [
+    {"id": "budget", "name": "Budżetowy", "churn": 0.08, "sla": 99.0},
+    {"id": "pro", "name": "Pro", "churn": 0.03, "sla": 99.9}
+  ],
+  "game_settings": {
+    "start_region_name": "Mój garaż",
+    "start_slots": 5,
+    "start_power_kw": 3.0,
+    "start_cooling": 0.8
+  },
+  "modifiers": {
+    "income_mult": 1.5,
+    "expense_mult": 0.8,
+    "churn_mult": 0.7
+  },
+  "website_blocks": [
+    {"type": "testimonials", "name": "Referencje", "bonus": 0.12}
+  ],
+  "tutorial_steps": [
+    {"title": "Witaj w modzie!", "body": "To krok samouczka z modu."}
+  ],
+  "events": [
+    {"type": "boom", "name": "Boom rynkowy", "effect": "+20% klientów na 5 dni"}
+  ],
+  "milestones": [
+    {"id": "mega_dc", "customers": 5000, "name": "Mega DC (mod)"}
+  ]
 }
