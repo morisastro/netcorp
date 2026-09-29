@@ -79,6 +79,13 @@ class PlanDialog(QDialog):
         self.price.setSuffix(" $/mies")
         form.addRow("Cena miesięczna:", self.price)
 
+        self.setup = QDoubleSpinBox()
+        self.setup.setRange(0, 9999)
+        self.setup.setDecimals(2)
+        self.setup.setSuffix(" $")
+        self.setup.setToolTip("Jednorazowa opłata setup (zastrzyk gotówki przy nowym kliencie)")
+        form.addRow("Opłata setup:", self.setup)
+
         self.sla = QDoubleSpinBox()
         self.sla.setRange(80, 100)
         self.sla.setDecimals(1)
@@ -103,6 +110,7 @@ class PlanDialog(QDialog):
             self.disk.setValue(plan.disk_gb)
             self.bw.setValue(plan.bandwidth_mbps)
             self.price.setValue(plan.price_monthly)
+            self.setup.setValue(plan.setup_fee)
             self.sla.setValue(plan.sla_target)
         self._update_field_visibility()
 
@@ -128,6 +136,7 @@ class PlanDialog(QDialog):
             bandwidth_mbps=self.bw.value() if "bw" in fields else 0,
             price_monthly=self.price.value(),
             sla_target=self.sla.value(),
+            setup_fee=self.setup.value(),
         )
 
 
@@ -156,6 +165,10 @@ class PlanCard(QFrame):
         price_lbl = QLabel(f"${plan.price_monthly:.2f}/mies")
         price_lbl.setStyleSheet("color: #4ade80; font-weight: bold; font-size: 14px;")
         header.addWidget(price_lbl)
+        if plan.setup_fee > 0:
+            setup_lbl = QLabel(f"+${plan.setup_fee:.0f} setup")
+            setup_lbl.setStyleSheet("color: #facc15; font-size: 11px;")
+            header.addWidget(setup_lbl)
         v.addLayout(header)
 
         # Nazwa planu

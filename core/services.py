@@ -102,11 +102,10 @@ def find_server_for_plan(state: Any, plan: Any, product_type: str) -> str | None
 def create_service(state: Any, plan: Any, segment: str, rng: Any) -> ServiceInstance | None:
     """Tworzy usługę (klienta) dla danego planu. Zwraca instancję lub None (brak serwera)."""
     if plan.product_type == "domain":
-        # Domeny nie są instances (nie zużywają serwerów)
         return None
     server_id = find_server_for_plan(state, plan, plan.product_type)
     if server_id is None:
-        return None  # Brak serwera który może przyjąć
+        return None
     stay = rng.randint(1, 7)
     svc = ServiceInstance(
         id=f"svc_{uuid.uuid4().hex[:8]}",
@@ -120,6 +119,10 @@ def create_service(state: Any, plan: Any, segment: str, rng: Any) -> ServiceInst
         status="active",
     )
     state.services.append(svc)
+    # Jednorazowa opłata setup (zastrzyk gotówki)
+    setup = getattr(plan, "setup_fee", 0.0)
+    if setup > 0:
+        state.cash += setup
     return svc
 
 
@@ -233,14 +236,23 @@ def churn_services(state: Any, rng: Any) -> int:
 
 
 def generate_revenue(state: Any) -> float:
-    """Przychód dzienny z wszystkich aktywnych usług."""
+    """Przychód dzienny z wszystkich aktywnych usług.
+
+    Uproszczenie: przychód dzienny = cena miesięczna / 20 (zamiast /30)
+    — szybsza rotacja pieniędzy dla lepszej grywalności.
+    Dodatkowo: opłata setup jednorazowa przy nowej usłudze.
+    """
     total = 0.0
     for svc in state.services:
         if svc.status == "active":
-            total += svc.monthly_price / 30.0
-    # Domeny — dodatkowo (prosty przychód z count)
+            total += svc.monthly_price / 20.0
+    # Domeny — $12/rok → ~$0.60/dzień (z marżą)
     for cust in state.customers:
         if cust.product_type == "domain":
-            # ~$12/rok → $0.03/dzień
-            total += cust.count * 0.03
+            total += cust.count * 0.60
     return total
+
+
+def setup_fee_income(plan: Any) -> float:
+    """Jednorazowy przychód z opłaty setup przy nowej usłudze."""
+    return getattr(plan, "setup_fee", 0.0)

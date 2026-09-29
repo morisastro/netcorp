@@ -221,7 +221,7 @@ class WebsiteScreen(QWidget):
         renderer_title.setStyleSheet("color: #60a5fa; font-weight: bold; padding: 4px;")
         renderer_col.addWidget(renderer_title)
         self.renderer = WebsiteRenderer()
-        self.renderer.render(self.game.state.website.blocks)
+        self._refresh_renderer()
         renderer_col.addWidget(self.renderer, 1)
         cols.addLayout(renderer_col, 2)
 
@@ -257,7 +257,18 @@ class WebsiteScreen(QWidget):
         self.bonus_label.setText(f"Bonus do konwersji: {bonus*100:.0f}%")
 
         # Odśwież podgląd
-        self.renderer.render(self.game.state.website.blocks)
+        self._refresh_renderer()
+
+    def _refresh_renderer(self) -> None:
+        """Odświeża podgląd strony z aktualnymi danymi gry."""
+        state = self.game.state
+        self.renderer.render(
+            state.website.blocks,
+            company_name="NetCorp",  # TODO: konfigurowalna nazwa firmy
+            cash=state.cash,
+            customers=sum(1 for s in state.services if s.status == "active"),
+            reputation=state.reputation,
+        )
 
     def _on_remove_block(self, block: WebsiteBlock) -> None:
         if block in self.game.state.website.blocks:
