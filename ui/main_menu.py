@@ -66,7 +66,9 @@ class MainMenuWindow(QWidget):
         super().__init__(parent)
         self.on_start_game = on_start_game  # callback(game: Game)
         self.setWindowTitle(f"{APP_DISPLAY_NAME}")
-        self.resize(900, 600)
+        from ui.screen_info import recommended_menu_size
+        menu_w, menu_h = recommended_menu_size()
+        self.resize(menu_w, menu_h)
         self.setMinimumSize(760, 520)
         self._build_ui()
         self._apply_theme()

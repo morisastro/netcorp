@@ -112,7 +112,8 @@ class CustomersScreen(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        cols = 2
+        from ui.screen_info import is_small_screen
+        cols = 1 if is_small_screen() else 2
         for i, cust in enumerate(self.game.state.customers):
             card = CustomerCard(cust)
             self.cards_grid.addWidget(card, i // cols, i % cols)

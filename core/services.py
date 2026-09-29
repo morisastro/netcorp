@@ -82,8 +82,8 @@ def can_host(server: Any, plan: Any, product_type: str, services: list[ServiceIn
     used = server_usage(server, services, plans_by_id)
     usage = service_resource_usage(plan, product_type)
     return (
-        used["cpu"] + usage["cpu"] <= cap["cpu"] * 1.5  # oversubscription 1.5×
-        and used["ram_gb"] + usage["ram_gb"] <= cap["ram_gb"] * 1.2
+        used["cpu"] + usage["cpu"] <= cap["cpu"] * 3.0  # oversubscription 3× (VPSy mogą być overcommit)
+        and used["ram_gb"] + usage["ram_gb"] <= cap["ram_gb"] * 2.0
         and used["disk_gb"] + usage["disk_gb"] <= cap["disk_gb"]
     )
 
@@ -106,7 +106,7 @@ def create_service(state: Any, plan: Any, segment: str, rng: Any) -> ServiceInst
     server_id = find_server_for_plan(state, plan, plan.product_type)
     if server_id is None:
         return None
-    stay = rng.randint(1, 7)
+    stay = rng.randint(5, 15)  # klienci zostają 5-15 dni (było 1-7)
     svc = ServiceInstance(
         id=f"svc_{uuid.uuid4().hex[:8]}",
         product_type=plan.product_type,

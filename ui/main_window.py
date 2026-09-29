@@ -64,7 +64,9 @@ class MainWindow(QWidget):
 
     def _build_ui(self) -> None:
         self.setWindowTitle(f"{APP_DISPLAY_NAME} v{APP_VERSION}")
-        self.resize(1280, 800)
+        from ui.screen_info import recommended_window_size
+        win_w, win_h = recommended_window_size()
+        self.resize(win_w, win_h)
         self.setMinimumSize(1024, 640)
 
         root = QHBoxLayout(self)

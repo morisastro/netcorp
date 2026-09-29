@@ -44,20 +44,26 @@ class InfrastructureScreen(QWidget):
         title.setObjectName("screen-title")
         layout.addWidget(title)
 
-        # Karty zasobów DC
+        # Karty zasobów DC — grid z rozciągalnością
         region = self.game.state.regions[0] if self.game.state.regions else None
         if region:
-            resources_row = QHBoxLayout()
-            resources_row.setSpacing(8)
+            from ui.screen_info import is_small_screen, svg_height_for_screen
+            resources_grid = QGridLayout()
+            resources_grid.setSpacing(8)
+            resources_grid.setContentsMargins(0, 0, 0, 0)
 
             self.card_region = KpiCard("Region", region.name)
             self.card_slots = KpiCard("Sloty", f"{region.slots_used}/{region.slots_total}")
             self.card_power = KpiCard("Prąd", f"{region.power_kw_used:.1f}/{region.power_kw_total:.1f} kW")
             self.card_net = KpiCard("Sieć", f"{region.network_gbps:.1f} Gbps ({region.uplinks}×)")
             self.card_cool = KpiCard("Chłodzenie", f"{region.cooling_factor:.2f}")
-            for c in (self.card_region, self.card_slots, self.card_power, self.card_net, self.card_cool):
-                resources_row.addWidget(c)
-            layout.addLayout(resources_row)
+            cards = [self.card_region, self.card_slots, self.card_power, self.card_net, self.card_cool]
+            # Na małym ekranie: 3 karty w rzędzie (2 rzędy), na dużym: 5 w rzędzie
+            cols = 3 if is_small_screen() else 5
+            for i, c in enumerate(cards):
+                resources_grid.addWidget(c, i // cols, i % cols)
+                resources_grid.setColumnStretch(i % cols, 1)
+            layout.addLayout(resources_grid)
 
             # Paski obciążenia
             bars_row = QHBoxLayout()
@@ -65,18 +71,19 @@ class InfrastructureScreen(QWidget):
 
             self.bar_power = self._make_bar("Obciążenie prądu")
             self.bar_slots = self._make_bar("Zajętość slotów")
-            bars_row.addWidget(self.bar_power)
-            bars_row.addWidget(self.bar_slots)
+            bars_row.addWidget(self.bar_power, 1)
+            bars_row.addWidget(self.bar_slots, 1)
             layout.addLayout(bars_row)
 
-        # Sekcja: serwerownia SVG
+        # Sekcja: serwerownia SVG — wysokość dostosowana do ekranu
         rack_title = QLabel("Serwerownia — wizualizacja slotów")
         rack_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #9a9a9a; margin-top: 8px;")
         layout.addWidget(rack_title)
 
         self.rack_svg = QSvgWidget()
-        self.rack_svg.setMinimumHeight(280)
-        layout.addWidget(self.rack_svg, 1)
+        from ui.screen_info import svg_height_for_screen
+        self.rack_svg.setMinimumHeight(svg_height_for_screen())
+        layout.addWidget(self.rack_svg)  # bez stretch — bierze naturalną wysokość
 
         # Przyciski: kup serwer + kup slot
         btn_row = QHBoxLayout()
@@ -101,7 +108,6 @@ class InfrastructureScreen(QWidget):
         self.scroll.setWidgetResizable(True)
         self.scroll.setFrameShape(QFrame.NoFrame)
         self.cards_container = QWidget()
-        from PySide6.QtWidgets import QGridLayout
         self.cards_grid = QGridLayout(self.cards_container)
         self.cards_grid.setSpacing(8)
         self.scroll.setWidget(self.cards_container)
@@ -149,7 +155,8 @@ class InfrastructureScreen(QWidget):
                 item.widget().deleteLater()
 
         from ui.icons import server_icon
-        cols = 3
+        from ui.screen_info import is_small_screen
+        cols = 2 if is_small_screen() else 3
         for i, s in enumerate(state.servers):
             model = get_model(s.model_id)
             model_name = model["name"] if model else s.model_id

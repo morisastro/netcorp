@@ -43,6 +43,11 @@ class DailyReportDialog(QDialog):
             ("Tickety rozwiązane", f"{report['tickets_resolved']}", "#9a9a9a"),
         ]
 
+        # Klienci którzy nie kupili (brak serwera)
+        unplaced = report.get("unplaced", 0)
+        if unplaced > 0:
+            rows.append(("⚠ Nie kupili (brak miejsca)", f"{unplaced}", "#facc15"))
+
         for label, value, color in rows:
             line = QLabel(f"{label}: {value}")
             line.setStyleSheet(f"color: {color}; font-size: 14px;")

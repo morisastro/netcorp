@@ -59,17 +59,24 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     marketing = state.marketing_budget_daily
     total_active = sum(1 for s in state.services if s.status == "active")
 
-    if state.reputation > 20 and rng.chance(0.4):
+    # Bazowo: 1-3 klientów dziennie jeśli są plany i reputacja > 10
+    if len(state.products) >= 1 and state.reputation > 10:
+        new_customers += 1
+        if rng.chance(0.5):
+            new_customers += 1
+        if rng.chance(0.25):
+            new_customers += 1
+    elif state.reputation > 20 and rng.chance(0.4):
         new_customers += 1
     elif rng.chance(0.15):
         new_customers += 1
+    # Z marketingu: każdy $ wygeneruje 1/MARKETING_COST_PER_NEW_CUSTOMER klienta
+    # ALE ograniczamy do max 20 z marketingu dziennie (żeby nie zalewać gracza)
     if marketing > 0 and total_active < 100000:
         website_bonus = state.website.conversion_bonus() if state.website else 0.0
         conv_rate = 1.0 + website_bonus
-        from_marketing = int(marketing / balance.MARKETING_COST_PER_NEW_CUSTOMER * conv_rate)
+        from_marketing = min(20, int(marketing / balance.MARKETING_COST_PER_NEW_CUSTOMER * conv_rate))
         new_customers += from_marketing
-    if len(state.products) >= 1 and rng.chance(0.25):
-        new_customers += 1
 
     # Twórz usługi dla nowych klientów
     placed_customers = 0
@@ -106,8 +113,10 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
                         break
     new_customers = placed_customers
     if unplaced > 0:
-        # Brak serwerów → klienci zniechęceni → reputacja -
-        state.reputation = max(0, state.reputation - unplaced * 0.5)
+        # Brak serwerów → klienci nie kupili, ale bez kary reputacji
+        # (gracz sam widzi po obciążeniu serwera że trzeba rozbudować)
+        # Zamiast tego: pokaż w raporcie ile klientów zrezygnowało
+        pass
 
     # ---- Sync CustomerAggregate z services ----
     for cust in state.customers:
@@ -179,6 +188,7 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
         "milestones_unlocked": milestones,
         "bankrupt": state.bankrupt,
         "debt": state.debt,
+        "unplaced": unplaced,  # klienci którzy nie kupili (brak serwera)
     }
 
 

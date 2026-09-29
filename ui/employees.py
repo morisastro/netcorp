@@ -197,7 +197,8 @@ class EmployeesScreen(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        cols = 3
+        from ui.screen_info import is_small_screen
+        cols = 2 if is_small_screen() else 3
         for i, emp in enumerate(self.game.state.employees):
             card = EmployeeCard(emp, on_fire=self._on_fire)
             self.cards_grid.addWidget(card, i // cols, i % cols)

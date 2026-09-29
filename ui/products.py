@@ -285,7 +285,8 @@ class ProductsScreen(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        cols = 3
+        from ui.screen_info import is_small_screen
+        cols = 2 if is_small_screen() else 3
         for i, plan in enumerate(self.game.state.products):
             card = PlanCard(plan, on_edit=self._on_edit_plan, on_delete=self._on_delete_plan)
             self.cards_grid.addWidget(card, i // cols, i % cols)
