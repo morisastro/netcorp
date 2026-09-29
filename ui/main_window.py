@@ -17,7 +17,12 @@ from app.settings import APP_DISPLAY_NAME, APP_VERSION
 from app.update_checker import check_for_update
 from core.game import Game
 from ui.dashboard import DashboardScreen
+from ui.employees import EmployeesScreen
+from ui.failures import FailuresScreen
+from ui.finances import FinancesScreen
+from ui.customers import CustomersScreen
 from ui.placeholder import PlaceholderScreen
+from ui.products import ProductsScreen
 from ui.theme import DARK_QSS
 
 
@@ -42,12 +47,13 @@ class MainWindow(QWidget):
     Layout: [sidebar | (topbar / stacked screens)]
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.game: Game = Game.new_game()
+    def __init__(self, game: Game | None = None, parent=None) -> None:
+        super().__init__(parent)
+        self.game: Game = game if game is not None else Game.new_game()
         self._current_screen_id: str = "dashboard"
         self._build_ui()
         self._apply_theme()
+        self._refresh_all()
         self._check_update_async()
 
     def _build_ui(self) -> None:
@@ -139,6 +145,10 @@ class MainWindow(QWidget):
         self.btn_next_day.clicked.connect(self._on_next_day)
         layout.addWidget(self.btn_next_day)
 
+        self.btn_save = QPushButton("💾 Zapisz")
+        self.btn_save.clicked.connect(self._on_save)
+        layout.addWidget(self.btn_save)
+
         # Banner aktualizacji (ukryty domyślnie)
         self.update_banner = QFrame()
         self.update_banner.setObjectName("update-banner")
@@ -168,16 +178,16 @@ class MainWindow(QWidget):
     def _build_screens(self) -> None:
         # Dashboard — zaimplementowany
         self.screens["dashboard"] = DashboardScreen(self.game)
+        self.screens["products"] = ProductsScreen(self.game)
+        self.screens["customers"] = CustomersScreen(self.game)
+        self.screens["failures"] = FailuresScreen(self.game)
+        self.screens["employees"] = EmployeesScreen(self.game)
+        self.screens["finances"] = FinancesScreen(self.game)
         # Pozostałe — placeholder z opisem
         placeholders = {
             "infrastructure": ("Infrastruktura", "Serwerownia, sloty, katalog serwerów, zasoby DC (prąd/sieć/chłodzenie)."),
-            "products": ("Produkty", "Tworzenie planów i cen dla hostingu WWW, VPS, dedyków, domen."),
-            "customers": ("Klienci", "Agregaty klientów per produkt, churn, status SLA."),
-            "failures": ("Awarie", "Aktywne awarie, wybór akcji (restart/wymiana/failover/ignore), historia."),
-            "employees": ("Pracownicy", "Zatrudnianie i zwalnianie: Support, Sysadmin, NetEng, Sales, Marketing."),
             "marketing": ("Marketing", "Budżet dzienny, ROI, przyrost klientów."),
             "website": ("Strona firmy", "Drag & drop builder sekcji strony — bonus do konwersji klientów."),
-            "finances": ("Finanse", "Przychody i koszty dzienne, wykres gotówki."),
             "settings": ("Ustawienia", "Zapis/wczytanie gry, licencja, sprawdź aktualizacje, o programie."),
         }
         for sid, (title, desc) in placeholders.items():
@@ -210,9 +220,19 @@ class MainWindow(QWidget):
         return 0
 
     def _on_next_day(self) -> None:
-        """Symulacja jednego dnia."""
+        """Symulacja jednego dnia + autosave + raport."""
         report = self.game.next_day()
         self._refresh_all()
+        # Autosave na koniec dnia
+        try:
+            from persistence import save_load
+            save_load.autosave(self.game)
+        except Exception:
+            pass
+        # Pokaż raport
+        from ui.daily_report import DailyReportDialog
+        dlg = DailyReportDialog(report, parent=self)
+        dlg.exec()
 
     def _refresh_all(self) -> None:
         """Odświeża topbar i aktywny ekran."""
@@ -255,3 +275,16 @@ class MainWindow(QWidget):
         from PySide6.QtGui import QDesktopServices
         from PySide6.QtCore import QUrl
         QDesktopServices.openUrl(QUrl(url))
+
+    def _on_save(self) -> None:
+        """Manualny zapis partii pod nazwą."""
+        from PySide6.QtWidgets import QInputDialog, QMessageBox
+        from persistence import save_load
+        name, ok = QInputDialog.getText(self, "Zapisz grę", "Nazwa zapisu:", text=f"partia-dzien-{self.game.state.day}")
+        if not ok or not name.strip():
+            return
+        try:
+            save_load.save_game(self.game, name.strip())
+            QMessageBox.information(self, "Zapisano", f"Partia zapisana jako „{name.strip()}”.")
+        except Exception as e:
+            QMessageBox.critical(self, "Błąd zapisu", f"Nie udało się zapisać:\n{e}")

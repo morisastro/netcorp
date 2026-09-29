@@ -1,7 +1,23 @@
-"""NetCorp Tycoon — punkt wejścia aplikacji."""
+"""NetCorp Tycoon — punkt wejścia aplikacji.
+
+Najpierw pokazuje menu startowe (nowa gra / wczytaj / ustawienia),
+dopiero po wybraniu partii otwiera główne okno gry.
+"""
+import os
 import sys
+
+# Wymuś UTF-8 na wszystkich platformach (głównie dla Windows console)
+os.environ.setdefault("PYTHONUTF8", "1")
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError):
+        pass
+
 from PySide6.QtWidgets import QApplication
 
+from ui.main_menu import MainMenuWindow
 from ui.main_window import MainWindow
 
 
@@ -9,8 +25,18 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("NetCorp Tycoon")
     app.setOrganizationName("NetCorpTycoon")
-    window = MainWindow()
-    window.show()
+
+    # Główne okno gry tworzone na żądanie po wybraniu partii
+    game_window: list[MainWindow] = []
+
+    def start_game(game):
+        win = MainWindow(game)
+        win.show()
+        game_window.append(win)
+
+    menu = MainMenuWindow(on_start_game=start_game)
+    menu.show()
+
     return app.exec()
 
 
