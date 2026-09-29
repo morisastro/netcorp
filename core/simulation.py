@@ -84,19 +84,44 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
                         for cust in state.customers:
                             if cust.product_type == pt:
                                 cust.count += 1
+                                # Zapisz dzień przyjazdu + losuj czas pobytu 1-7 dni
+                                cust.arrival_days.append(state.day)
+                                cust.avg_stay_days = rng.randint(1, 7)
                                 break
                         break
 
     # ---- Churn ----
     for cust in state.customers:
         if cust.count > 0:
-            daily_churn = cust.churn_monthly / 30.0
-            # Bonus churn jeśli aktywne awarie
-            if state.failures_active:
-                daily_churn += 0.02
-            lost = sum(1 for _ in range(cust.count) if rng.chance(daily_churn))
-            cust.count = max(0, cust.count - lost)
-            churned += lost
+            # 1) Klienci, których wiek >= avg_stay_days odchodzą (czas pobytu minął)
+            stay = cust.avg_stay_days
+            keep_arrivals: list[int] = []
+            lost_to_stay = 0
+            for arr_day in cust.arrival_days:
+                age = state.day - arr_day
+                # Losowa tolerancja: niektórzy odchodzą wcześniej (50% szans gdy age >= stay-1),
+                # inni zostają trochę dłużej
+                if age >= stay:
+                    lost_to_stay += 1
+                elif age >= stay - 1 and rng.chance(0.3):
+                    lost_to_stay += 1
+                else:
+                    keep_arrivals.append(arr_day)
+            cust.arrival_days = keep_arrivals
+            cust.count = max(0, cust.count - lost_to_stay)
+            churned += lost_to_stay
+
+            # 2) Naturalny churn (z awarii, ceny itp.) — na pozostałych
+            if cust.count > 0:
+                daily_churn = cust.churn_monthly / 30.0
+                if state.failures_active:
+                    daily_churn += 0.02
+                remaining_lost = sum(1 for _ in range(cust.count) if rng.chance(daily_churn))
+                if remaining_lost > 0:
+                    # Usuń najstarszych klientów z arrival_days
+                    cust.arrival_days = cust.arrival_days[remaining_lost:]
+                    cust.count = max(0, cust.count - remaining_lost)
+                    churned += remaining_lost
 
     # ---- Reputacja ----
     if state.failures_active:

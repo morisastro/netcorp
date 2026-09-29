@@ -212,6 +212,11 @@ class MainWindow(QWidget):
         widget = self.screens.get(screen_id)
         if hasattr(widget, "refresh"):
             widget.refresh()
+        # Animacja fade-in ekranu
+        from ui.widgets.animated import fade_in
+        scroll = self.stack.currentWidget()
+        if scroll is not None:
+            fade_in(scroll, duration_ms=250)
 
     def _index_of(self, screen_id: str) -> int:
         for i in range(self.stack.count()):

@@ -90,6 +90,10 @@ class CustomerAggregate:
     churn_monthly: float = 0.05
     nps: int = 0
     sla_breaches_this_month: int = 0
+    # Średni czas pobytu klienta w dniach (1-7 przy zakupie, losowo)
+    avg_stay_days: int = 3
+    # Dni przyjazdu poszczególnych klientów (do śledzenia wieku; długość == count)
+    arrival_days: list[int] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -99,10 +103,14 @@ class CustomerAggregate:
             "churn_monthly": self.churn_monthly,
             "nps": self.nps,
             "sla_breaches_this_month": self.sla_breaches_this_month,
+            "avg_stay_days": self.avg_stay_days,
+            "arrival_days": list(self.arrival_days),
         }
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "CustomerAggregate":
+        d = dict(d)  # kopia, nie mutuj oryginału
+        d.setdefault("arrival_days", [])
         return cls(**d)
 
 
