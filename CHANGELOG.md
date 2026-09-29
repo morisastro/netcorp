@@ -1,23 +1,17 @@
 # Changelog
 
-## [0.2.7] - 2026-09-29
+## [0.2.8] - 2026-09-29
 
 ### Naprawione
-- Krytyczny bug: domeny nie rosły (count zawsze 0)
-  - churn_services() nadpisywał count domen wartością z services (domeny nie są services)
-  - Dodany osobny churn dla domen (z arrival_days i avg_stay_days)
+- Krytyczny bug: wszystkie klienty trafiały do pierwszego produktu (www)
+  - `rng.random()` zwracało [0,1) ale suma wag > 1 → zawsze trafiał pierwszy produkt
+  - Naprawa: `r = rng.random() * total_w` (normalizacja do [0, suma_wag))
+- Przychód dzienny: /20 → /10 (podwojenie zysku per klient)
+- Domeny: $0.60/dzień → $1.20/dzień (podwojenie)
 
-### Dodane
-- Komunikat "⚠️ SERWERY NIEWYSTARCZAJĄCE" w raporcie dziennym
-  - Pokazuje liczbę klientów którzy nie kupili (brak miejsca na serwerach)
-  - Sugeruje kupno serwerów / rozbudowę serwerowni
-- Debug mode w Ustawieniach
-  - Checkbox (zapisywany w settings.json)
-  - Loguje detale symulacji do konsoli (cash, services, customers, unplaced, failures, tickets)
-- Sekcja "🐞 Zgłaszanie błędów" w Ustawieniach
-  - Link do GitHub Issues (https://github.com/morisastro/netcorp/issues)
-- Skalowanie UI pod rozdzielczość monitora (screen_info.py)
-  - Wykrywanie rozmiaru ekranu, dostosowanie okna i liczby kolumn kart
-- Churn klientów wydłużony: 1-7 dni → 5-15 dni
-- Oversubscription serwerów zwiększony: 1.5× → 3× CPU, 1.2× → 2× RAM
-- Max 20 klientów z marketingu dziennie (żeby nie zalewać gracza)
+### Zmienione
+- Ekonomia: lżejsza gra na start
+  - Pensje: $50/level → $30/level
+  - Licencje: $5/dzień → $2/dzień
+  - Marketing cost: $15/klient → $10/klient
+- Playtest potwierdził: gra stabilna finansowo po 30 dniach

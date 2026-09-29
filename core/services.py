@@ -241,18 +241,17 @@ def churn_services(state: Any, rng: Any) -> int:
 def generate_revenue(state: Any) -> float:
     """Przychód dzienny z wszystkich aktywnych usług.
 
-    Uproszczenie: przychód dzienny = cena miesięczna / 20 (zamiast /30)
+    Uproszczenie: przychód dzienny = cena miesięczna / 10 (zamiast /30)
     — szybsza rotacja pieniędzy dla lepszej grywalności.
-    Dodatkowo: opłata setup jednorazowa przy nowej usłudze.
     """
     total = 0.0
     for svc in state.services:
         if svc.status == "active":
-            total += svc.monthly_price / 20.0
-    # Domeny — $12/rok → ~$0.60/dzień (z marżą)
+            total += svc.monthly_price / 10.0
+    # Domeny — $12/rok → ~$1.20/dzień (z marżą)
     for cust in state.customers:
         if cust.product_type == "domain":
-            total += cust.count * 0.60
+            total += cust.count * 1.20
     return total
 
 

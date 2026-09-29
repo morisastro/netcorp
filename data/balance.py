@@ -57,11 +57,11 @@ CHURN_FROM_LOW_UPTIME = 0.05      # +5% jeśli uptime < 99%
 CHURN_FROM_SLOW_SUPPORT = 0.03    # +3% jeśli support wolny
 
 # ---- Marketing ----
-MARKETING_COST_PER_NEW_CUSTOMER = 15.0  # średnio $ wydan na marketing → 1 nowy klient
+MARKETING_COST_PER_NEW_CUSTOMER = 10.0  # średnio $ wydan na marketing → 1 nowy klient (było $15)
 MARKETING_BASELINE_NEW_CUSTOMERS = 3     # bazowo dziennie (bez marketingu, z reputacji)
 
 # ---- Pracownicy ----
-EMPLOYEE_SALARY_PER_LEVEL = 50.0   # pensja dzienna = level × $50
+EMPLOYEE_SALARY_PER_LEVEL = 30.0   # pensja dzienna = level × $30 (było $50)
 EMPLOYEE_CAPACITY_PER_LEVEL = 10    # pojemność (ticketów/awacji) = level × 10
 
 # ---- Koszty stałe (dzienne) ----
@@ -70,7 +70,7 @@ POWER_PRICE_PER_KWH = 0.15
 # Łącze: $/Mbps/dzień
 NETWORK_PRICE_PER_MBPS_DAILY = 0.05
 # Licencje (stałe dzienne)
-LICENSE_DAILY = 5.0
+LICENSE_DAILY = 2.0  # było $5
 
 # ---- Rozbudowa serwerowni ----
 # Cena zakupu slotu rośnie z liczbą slotów: base + (slots_total × step)

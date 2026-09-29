@@ -91,8 +91,9 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     if new_customers > 0 and state.products:
         product_weights = _product_weights(state)
         if product_weights:
+            total_w = sum(product_weights.values())
             for _ in range(new_customers):
-                r = rng.random()
+                r = rng.random() * total_w  # normalizuj do [0, suma_wag)
                 cumulative = 0.0
                 for pt, w in product_weights.items():
                     cumulative += w
