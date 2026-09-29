@@ -8,10 +8,17 @@ import sys
 
 # Wymuś UTF-8 na wszystkich platformach (głównie dla Windows console)
 os.environ.setdefault("PYTHONUTF8", "1")
-if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+# W aplikacji okienkowej (.exe bez konsoli) sys.stdout/stderr mogą być None
+_stdout = getattr(sys, "stdout", None)
+if _stdout is not None and getattr(_stdout, "encoding", "") and _stdout.encoding.lower() != "utf-8":
     try:
-        sys.stdout.reconfigure(encoding="utf-8")
-        sys.stderr.reconfigure(encoding="utf-8")
+        _stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, OSError):
+        pass
+_stderr = getattr(sys, "stderr", None)
+if _stderr is not None and getattr(_stderr, "encoding", "") and _stderr.encoding.lower() != "utf-8":
+    try:
+        _stderr.reconfigure(encoding="utf-8")
     except (AttributeError, OSError):
         pass
 
