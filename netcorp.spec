@@ -17,6 +17,7 @@ a = Analysis(
         # Brak zewnętrznych danych — wszystko w Pythonie
         ('data', 'data'),
         ('LICENSE', '.'),
+        ('assets', 'assets'),
     ],
     hiddenimports=[
         'PySide6.QtSvgWidgets',
@@ -56,7 +57,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,  # TODO: dodać .ico w przyszłości
+    icon='assets/logo.ico',
 )
 
 coll = COLLECT(

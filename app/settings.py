@@ -26,3 +26,13 @@ def app_data_dir() -> Path:
     base = Path.home() / ".netcorp-tycoon"
     base.mkdir(parents=True, exist_ok=True)
     return base
+
+
+def app_icon_path() -> str:
+    """Zwraca ścieżkę logo.ico — działa w dev i w bundlu PyInstaller."""
+    import sys
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, 'assets', 'logo.ico')
+    # Dev mode: katalog projektu / assets / logo.ico
+    here = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(here, '..', 'assets', 'logo.ico'))

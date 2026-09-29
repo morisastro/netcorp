@@ -26,6 +26,12 @@ def main() -> int:
     app.setApplicationName("NetCorp Tycoon")
     app.setOrganizationName("NetCorpTycoon")
 
+    # Ikona aplikacji (pasek zadań, okno)
+    from app.settings import app_icon_path
+    from PySide6.QtGui import QIcon
+    if os.path.exists(app_icon_path()):
+        app.setWindowIcon(QIcon(app_icon_path()))
+
     # Główne okno gry tworzone na żądanie po wybraniu partii
     game_window: list[MainWindow] = []
 
