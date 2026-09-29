@@ -237,6 +237,18 @@ class MainWindow(QWidget):
 
     def _on_next_day(self) -> None:
         """Symulacja jednego dnia + autosave + raport."""
+        # Blokuj jeśli bankrut
+        if self.game.state.bankrupt:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                self, "BANKRUTWO — Game Over",
+                f"Twoja firma zbankrutowała!\n\n"
+                f"Dzień {self.game.state.day}\n"
+                f"Gotówka: ${self.game.state.cash:.2f}\n"
+                f"Dług: ${self.game.state.debt:.2f}\n\n"
+                f"Zapisz grę (jeśli chcesz) i wczytaj nową partię z menu głównego.",
+            )
+            return
         report = self.game.next_day()
         self._refresh_all()
         # Autosave na koniec dnia
@@ -245,6 +257,19 @@ class MainWindow(QWidget):
             save_load.autosave(self.game)
         except Exception:
             pass
+        # Sprawdź bankructwo po symulacji
+        if report.get("bankrupt"):
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                self, "BANKRUTWO — Game Over",
+                f"Twoja firma zbankrutowała!\n\n"
+                f"Gotówka spadła poniżej $0.\n"
+                f"Dzień {report['day']}\n"
+                f"Gotówka: ${report['cash']:.2f}\n"
+                f"Dług: ${report.get('debt', 0):.2f}\n\n"
+                f"Nie możesz kontynuować. Wczytaj nową partię.",
+            )
+            return
         # Pokaż raport
         from ui.daily_report import DailyReportDialog
         dlg = DailyReportDialog(report, parent=self)
@@ -254,7 +279,11 @@ class MainWindow(QWidget):
         """Odświeża topbar i aktywny ekran."""
         state = self.game.state
         self.date_label.setText(f"📅 {self.game.date_label()}")
-        self.kpi_cash.setText(f"💰 Gotówka: ${state.cash:,.2f}")
+        # Gotówka: czerwono gdy ujemna lub bankrut
+        cash_color = "#f87171" if state.cash < 0 else "#d4d4d4"
+        bankrupt_marker = " ⛔ BANKRUT" if state.bankrupt else ""
+        self.kpi_cash.setText(f"💰 Gotówka: ${state.cash:,.2f}{bankrupt_marker}")
+        self.kpi_cash.setStyleSheet(f"color: {cash_color}; padding: 8px 12px; font-size: 13px;")
         self.kpi_customers.setText(f"👥 Klienci: {self.game.total_customers()}")
         self.kpi_reputation.setText(f"⭐ Reputacja: {state.reputation:.0f}/100")
 

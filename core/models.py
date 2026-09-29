@@ -353,6 +353,11 @@ class GameState:
     failure_multiplier: float = 1.0
     # Czy samouczek już pokazany (False = pokaż przy nowej grze)
     tutorial_shown: bool = False
+    # Pożyczka (debt) — gracz może pożyczyć w zamian za część klientów
+    debt: float = 0.0
+    debt_daily_interest: float = 0.001  # 0.1% dziennie
+    # Flaga bankructwa (game over)
+    bankrupt: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -378,6 +383,9 @@ class GameState:
             "game_mode": self.game_mode,
             "failure_multiplier": self.failure_multiplier,
             "tutorial_shown": self.tutorial_shown,
+            "debt": self.debt,
+            "debt_daily_interest": self.debt_daily_interest,
+            "bankrupt": self.bankrupt,
         }
 
     @classmethod
@@ -405,4 +413,7 @@ class GameState:
             game_mode=d.get("game_mode", "sandbox"),
             failure_multiplier=d.get("failure_multiplier", 1.0),
             tutorial_shown=d.get("tutorial_shown", False),
+            debt=d.get("debt", 0.0),
+            debt_daily_interest=d.get("debt_daily_interest", 0.001),
+            bankrupt=d.get("bankrupt", False),
         )

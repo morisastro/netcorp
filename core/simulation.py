@@ -136,6 +136,16 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     # ---- Aktualizacja gotówki ----
     state.cash += income - expenses
 
+    # ---- Odsetki od pożyczki ----
+    if state.debt > 0:
+        interest = state.debt * state.debt_daily_interest
+        state.debt += interest
+        state.cash -= interest
+
+    # ---- Bankructwo ----
+    if state.cash < 0 and not state.bankrupt:
+        state.bankrupt = True
+
     # ---- Reputacja z awarii ----
     if state.failures_active:
         state.reputation = max(0, state.reputation - len(state.failures_active) * 0.5)
@@ -167,6 +177,8 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
         "tickets_open": state.tickets_open,
         "new_tickets": new_tickets,
         "milestones_unlocked": milestones,
+        "bankrupt": state.bankrupt,
+        "debt": state.debt,
     }
 
 
