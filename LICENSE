@@ -1,0 +1,58 @@
+Creative Commons Attribution-NoDerivatives 4.0 International (CC BY-ND 4.0)
+
+Copyright (c) 2026 NetCorp Tycoon
+
+You are free to:
+
+  * Share — copy and redistribute the material in any medium or format
+    for any purpose, even commercially.
+
+  * Under the following terms:
+
+    * Attribution — You must give appropriate credit, provide a link to
+      the license, and indicate if changes were made. You may do so in any
+      reasonable manner, but not in any way that suggests the licensor
+      endorses you or your use.
+
+    * NoDerivatives — If you remix, transform, or build upon the material,
+      you may not distribute the modified material.
+
+    * No additional restrictions — You may not apply legal terms or
+      technological measures that legally restrict others from doing
+      anything the license permits.
+
+Full license text: https://creativecommons.org/licenses/by-nd/4.0/legalcode
+
+------------------------------------------------------------------------------
+
+ADDITIONAL GRANT — GAME MODS
+
+The "NoDerivatives" restriction above applies to the source code and the
+game itself (the "Original Work"). However, this license explicitly
+permits the creation and distribution of "Mods" — supplementary files,
+data, scripts, or packages that are loaded by the game at runtime through
+the official modding system, and that do not modify or replace the
+Original Work's source code or binaries.
+
+Mods are considered independent works and are NOT derivative works of the
+Original Work, provided that:
+
+  1. The Mod is distributed as a separate, standalone package and does not
+     include or embed the Original Work's source code or binaries.
+  2. The Mod is loaded at runtime via the official modding API provided by
+     the game.
+  3. The Mod does not circumvent or remove any technical protection,
+     licensing, or attribution mechanisms of the Original Work.
+
+Authors of Mods retain full rights to their own work and may choose any
+license for their Mods.
+
+------------------------------------------------------------------------------
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

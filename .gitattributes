@@ -1,0 +1,22 @@
+# Normalize line endings: text files use LF in the repo, checked out as-is.
+* text=auto eol=lf
+
+# Ensure Python and docs are LF
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf
+*.spec text eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.svg text eol=lf
+*.qm binary
+*.qrc text eol=lf

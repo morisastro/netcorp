@@ -1,0 +1,73 @@
+# Bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+
+# Virtualenv
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# PyInstaller
+*.spec.bak
+build_exe/
+release/
+*.exe
+*.app
+*.dmg
+# (keep .spec files tracked)
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Save files (game state) — never commit user saves
+*.save
+*.save.json
+saves/
+~/.netcorp-tycoon/
+
+# Local env
+.env
+.env.local
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+.mypy_cache/
