@@ -1,0 +1,1 @@
+"""Pakiet danych statycznych gry (katalogi, balans, generatory)."""

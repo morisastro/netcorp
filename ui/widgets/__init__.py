@@ -1,0 +1,1 @@
+"""Współdzielone widgety UI."""

@@ -1,0 +1,1 @@
+"""Pakiet aplikacji — powłoka, ustawienia, update checker."""

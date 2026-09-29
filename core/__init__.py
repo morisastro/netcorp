@@ -1,0 +1,1 @@
+"""Pakiet logiki gry (framework-agnostic, testowalna bez Qt)."""

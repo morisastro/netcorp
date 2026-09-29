@@ -1,0 +1,1 @@
+"""Pakiet UI — ekrany PySide6."""

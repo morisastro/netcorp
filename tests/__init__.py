@@ -1,0 +1,1 @@
+"""Pakiet testów pytest dla logiki core."""

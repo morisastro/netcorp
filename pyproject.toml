@@ -1,0 +1,28 @@
+[project]
+name = "netcorp-tycoon"
+version = "0.1.0"
+description = "Desktopowa gra management/tycoon o prowadzeniu firmy hostingowej / cloud providera."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [{ name = "morisastro" }]
+dependencies = [
+    "PySide6>=6.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pyinstaller>=6.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools]
+packages = ["app", "core", "data", "persistence", "ui", "ui.widgets"]

@@ -1,0 +1,1 @@
+"""Pakiet persistence — save/load stanu gry do JSON."""
