@@ -31,10 +31,29 @@ def update_version(new_version: str) -> None:
     replacement = f'APP_VERSION = "{new_version}"'
     new_content, count = re.subn(pattern, replacement, content, flags=re.MULTILINE)
     if count == 0:
-        print(f"BŁĄD: nie znaleziono APP_VERSION w {SETTINGS}")
+        print(f"BLAD: nie znaleziono APP_VERSION w {SETTINGS}")
         sys.exit(1)
     SETTINGS.write_text(new_content, encoding="utf-8")
     print(f"[OK] Zaktualizowano APP_VERSION -> {new_version}")
+
+
+def _read_current_version() -> str:
+    """Czyta aktualna wersje z app/settings.py."""
+    content = SETTINGS.read_text(encoding="utf-8")
+    m = re.search(r'^APP_VERSION\s*=\s*"([^"]*)"', content, re.MULTILINE)
+    return m.group(1) if m else "0.0.0"
+
+
+def _next_version(current: str) -> str:
+    """Wylicza nastepna wersje wg reguly: +0.0.1, a przy x.x.9 -> x.(N+1).0."""
+    parts = current.split(".")
+    if len(parts) != 3:
+        return "0.0.1"
+    major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
+    if patch >= 9:
+        # x.x.9 -> x.(N+1).0
+        return f"{major}.{minor + 1}.0"
+    return f"{major}.{minor}.{patch + 1}"
 
 
 def run(cmd: list[str], check: bool = True) -> int:
@@ -47,15 +66,24 @@ def run(cmd: list[str], check: bool = True) -> int:
 
 
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Użycie: python new_version.py <wersja>")
-        print("Przykład: python new_version.py 0.2.0")
+    if len(sys.argv) < 2:
+        print("Użycie: python new_version.py <wersja|auto>")
+        print("  auto  — automatycznie wylicz nastepna wersje (0.0.1 +, x.x.9 -> x.(N+1).0)")
+        print("Przyklad: python new_version.py 0.2.1")
         return 1
 
-    version = sys.argv[1].strip().lstrip("vV")
-    if not re.match(r"^\d+\.\d+\.\d+$", version):
-        print(f"BŁĄD: wersja musi być w formacie X.Y.Z (np. 0.2.0), dostałem: {version}")
-        return 1
+    arg = sys.argv[1].strip()
+
+    if arg == "auto":
+        # Wylicz nastepna wersje z aktualnej APP_VERSION
+        current = _read_current_version()
+        version = _next_version(current)
+        print(f"Aktualna: {current} -> Nastepna: {version}")
+    else:
+        version = arg.lstrip("vV")
+        if not re.match(r"^\d+\.\d+\.\d+$", version):
+            print(f"BLAD: wersja musi byc w formacie X.Y.Z (np. 0.2.1), dostalem: {version}")
+            return 1
 
     tag = f"v{version}"
     print(f"=== Tworzenie nowej wersji {tag} ===")
