@@ -1,46 +1,54 @@
 # NetCorp Tycoon
 
-A desktop management/tycoon game about building your own hosting / cloud infrastructure company — from a garage home lab to a multi-region provider.
+Desktopowa gra management/tycoon o budowaniu własnej firmy hostingowej / cloud providera — od garażowego home labu do międzynarodowego operatora infrastruktury.
 
-> **Status:** Pre-production — specification phase. No playable code yet.
+> **Status:** Pre-produkcja — faza specyfikacji. Brak grywalnego kodu na ten moment.
 
-## License
+## Licencja
 
-This game is free and licensed under **CC BY-ND 4.0** (Creative Commons Attribution-NoDerivatives 4.0 International).
+Gra jest darmowa i licencjonowana na **CC BY-ND 4.0** (Creative Commons Attribution-NoDerivatives 4.0 International).
 
-- You may **copy, distribute and use** the game, even commercially, **with attribution**.
-- You may **not** redistribute a **modified** version of the source code or binaries.
-- **Mods are allowed** — supplementary packages loaded at runtime via the official modding API are not considered derivative works of the game, provided they are distributed separately and do not embed or replace the game's source code or binaries. Mod authors retain full rights to their own work.
+- Możesz **kopiować, dystrybuować i używać** gry, nawet komercyjnie, **z atrybucją** (oznaczeniem autora).
+- **Nie wolno** redystrybuować **zmodyfikowanej** wersji kodu źródłowego ani binariów.
+- **Mody są dozwolone** — dodatkowe pakiety ładowane w czasie działania przez oficjalny modding API nie są uznawane za dzieła pochodne gry, o ile są dystrybuowane oddzielnie i nie zawierają/zastępują kodu źródłowego ani binariów gry. Autorzy modów zachowują pełne prawa do swoich prac.
 
-See [LICENSE](LICENSE) for the full text.
+Pełny tekst licencji: [LICENSE](LICENSE).
 
-## Tech stack
+## Stack technologiczny
 
-- **Language:** Python 3.11+
+- **Język:** Python 3.11+
 - **UI:** PySide6 (Qt for Python)
-- **State:** local JSON file (no database, no server)
+- **Stan:** lokalny plik JSON (bez bazy danych, bez serwera)
 - **Bundling:** PyInstaller
-- **CI:** GitHub Actions (build on tag → release)
+- **CI:** GitHub Actions (build na tag → release)
 
-## Project structure
+## Struktura projektu
 
 ```
 netcorp-tycoon/
 ├── main.py                  # entrypoint
-├── app/                     # application shell, settings, update checker
-├── core/                    # game logic (framework-agnostic, testable)
-├── data/                    # static game data (catalogs, balance, generators)
+├── app/                     # powłoka aplikacji, ustawienia, update checker
+├── core/                    # logika gry (agnostyczna względem UI, testowalna)
+├── data/                    # dane statyczne (katalogi, balans, generatory)
 ├── persistence/             # save/load
-├── ui/                      # PySide6 screens & widgets
-└── tests/                   # pytest tests for core logic
+├── ui/                      # ekrany i widgety PySide6
+└── tests/                   # testy pytest dla logiki core
 ```
 
-The `core/` layer is fully separated from `ui/` — game logic knows nothing about Qt and is unit-tested independently. The UI only calls methods on a `Game` object and reads state through `Game.get_state()`.
+Warstwa `core/` jest całkowicie odseparowana od `ui/` — logika gry nie zna Qt i jest testowana jednostkowo niezależnie. UI wywołuje tylko metody na obiekcie `Game` i czyta stan przez `Game.get_state()`.
 
-## Documentation
+## Dokumentacja
 
-- [SPEC.md](SPEC.md) — full game specification (gameplay loop, systems, economy, progression, employees, failures, customers, UI screens, data model, roadmap).
+- [SPEC.md](SPEC.md) — pełna specyfikacja gry (pętla rozgrywki, systemy, ekonomia, progression, pracownicy, awarie, klienci, ekrany UI, model danych, roadmapa).
+
+## Język
+
+Gra jest po polsku (interfejs, komunikaty, raporty, tickety, nazwy ról). Kod i identyfikatory techniczne po angielsku. Angielska lokalizacja jako opcjonalna warstwa w późniejszej fazie.
+
+## Zapisy (save)
+
+Każda partia = osobny plik `.json` w `~/.netcorp-tycoon/saves/` z nazwą zapisu. Multi-slot, autosave na koniec dnia, manualny save pod nazwą. Ekran ładowania listuje zapisy z datą i mini-podglądem KPI.
 
 ## Development
 
-(Setup instructions will be added once the scaffold is in place.)
+(Instrukcje setupu zostaną dodane po postawieniu scaffoldu projektu.)
