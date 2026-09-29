@@ -74,6 +74,15 @@ def test_state_serialization_roundtrip():
 
 def test_total_customers_aggregates_all_segments():
     game = Game.new_game()
-    game.state.customers[0].count = 10
-    game.state.customers[1].count = 5
+    # Teraz total_customers liczy z aktywnych usług + domen
+    # Dodajemy usługi ręcznie
+    from core.models import ServiceInstance
+    for i in range(10):
+        game.state.services.append(
+            ServiceInstance(
+                id=f"svc_{i}", product_type="www", plan_id="p", server_id="srv_initial",
+                segment="hobbyist", arrived_day=1, stay_days=5, monthly_price=10,
+            )
+        )
+    game.state.customers[3].count = 5  # domeny (product_type=domain na idx 3)
     assert game.total_customers() == 15

@@ -118,7 +118,10 @@ class Game:
     # ---- KPI helpers ----
 
     def total_customers(self) -> int:
-        return sum(c.count for c in self.state.customers)
+        # Licz z aktywnych usług + domen
+        active = sum(1 for s in self.state.services if s.status == "active")
+        domains = sum(c.count for c in self.state.customers if c.product_type == "domain")
+        return active + domains
 
     def cash(self) -> float:
         return self.state.cash

@@ -42,7 +42,7 @@ class DashboardScreen(QWidget):
         self.card_cash = KpiCard("Gotówka")
         self.card_customers = KpiCard("Klienci (łącznie)")
         self.card_reputation = KpiCard("Reputacja")
-        self.card_servers = KpiCard("Serwery")
+        self.card_servers = KpiCard("Usługi aktywne")
         self.card_failures = KpiCard("Aktywne awarie")
         self.card_tickets = KpiCard("Otwarte tickety")
 
@@ -86,7 +86,7 @@ class DashboardScreen(QWidget):
         self.card_cash.set_value(f"${state.cash:,.2f}")
         self.card_customers.set_value(f"{self.game.total_customers()}")
         self.card_reputation.set_value(f"{state.reputation:.0f}/100")
-        self.card_servers.set_value(f"{len(state.servers)}")
+        self.card_servers.set_value(f"{sum(1 for s in state.services if s.status == 'active')}")
         self.card_failures.set_value(f"{len(state.failures_active)}")
         self.card_tickets.set_value(f"{state.tickets_open}")
 

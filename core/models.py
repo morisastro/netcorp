@@ -94,7 +94,6 @@ class CustomerAggregate:
     avg_stay_days: int = 3
     # Dni przyjazdu poszczególnych klientów (do śledzenia wieku; długość == count)
     arrival_days: list[int] = field(default_factory=list)
-
     def to_dict(self) -> dict[str, Any]:
         return {
             "product_type": self.product_type,
@@ -135,6 +134,76 @@ class Employee:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Employee":
+        return cls(**d)
+
+
+@dataclass
+class ServiceInstance:
+    """Pojedyncza usługa (VPS/WWW/dedyk) uruchomiona na konkretnym serwerze.
+
+    Reprezentuje faktycznego klienta — zużywa zasoby serwera (CPU/RAM/dysk).
+    Domeny nie są instances (nie zużywają serwerów).
+    """
+    id: str
+    product_type: str        # "www" | "vps" | "dedicated"
+    plan_id: str             # referencja do ProductPlan
+    server_id: str           # na jakim serwerze żyje
+    segment: str             # "hobbyist" | "small_biz"
+    arrived_day: int         # dzień przyjazdu (do churn)
+    stay_days: int           # ile dni zostaje (1-7, losowane)
+    monthly_price: float     # cena (kopia z planu)
+    status: str = "active"   # "active" | "churning" | "down"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "product_type": self.product_type,
+            "plan_id": self.plan_id,
+            "server_id": self.server_id,
+            "segment": self.segment,
+            "arrived_day": self.arrived_day,
+            "stay_days": self.stay_days,
+            "monthly_price": self.monthly_price,
+            "status": self.status,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "ServiceInstance":
+        return cls(**d)
+
+
+@dataclass
+class Ticket:
+    """Ticket supportu — problem zgłoszony przez klienta.
+
+    Typy: support (ogólne), failure (awaria sprzętu), network (sieć), sla (SLA naruszenie).
+    Pracownicy automatycznie rozwiązują tickety wg roli i poziomu.
+    """
+    id: str
+    type: str                # "support" | "failure" | "network" | "sla"
+    instance_id: str | None  # usługa której dotyczy (None = ogólny)
+    server_id: str | None    # serwer jeśli dotyczy
+    created_day: int
+    priority: int = 1        # 1=niski, 2=średni, 3=wysoki
+    status: str = "open"     # "open" | "resolved" | "ignored"
+    resolved_day: int = 0
+    description: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "type": self.type,
+            "instance_id": self.instance_id,
+            "server_id": self.server_id,
+            "created_day": self.created_day,
+            "priority": self.priority,
+            "status": self.status,
+            "resolved_day": self.resolved_day,
+            "description": self.description,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "Ticket":
         return cls(**d)
 
 
@@ -267,6 +336,10 @@ class GameState:
     employees: list[Employee] = field(default_factory=list)
     failures_active: list[Failure] = field(default_factory=list)
     failures_history: list[Failure] = field(default_factory=list)
+    # Realne usługi na serwerach (VPS/WWW/dedyk) — faktyczni klienci
+    services: list[ServiceInstance] = field(default_factory=list)
+    # Tickety supportu
+    tickets: list[Ticket] = field(default_factory=list)
     marketing_budget_daily: float = 0.0
     website: Website = field(default_factory=Website)
     tickets_open: int = 0
@@ -293,6 +366,8 @@ class GameState:
             "employees": [e.to_dict() for e in self.employees],
             "failures_active": [f.to_dict() for f in self.failures_active],
             "failures_history": [f.to_dict() for f in self.failures_history],
+            "services": [s.to_dict() for s in self.services],
+            "tickets": [t.to_dict() for t in self.tickets],
             "marketing_budget_daily": self.marketing_budget_daily,
             "website": self.website.to_dict(),
             "tickets_open": self.tickets_open,
@@ -318,6 +393,8 @@ class GameState:
             employees=[Employee.from_dict(e) for e in d.get("employees", [])],
             failures_active=[Failure.from_dict(f) for f in d.get("failures_active", [])],
             failures_history=[Failure.from_dict(f) for f in d.get("failures_history", [])],
+            services=[ServiceInstance.from_dict(s) for s in d.get("services", [])],
+            tickets=[Ticket.from_dict(t) for t in d.get("tickets", [])],
             marketing_budget_daily=d.get("marketing_budget_daily", 0.0),
             website=Website.from_dict(d.get("website", {})),
             tickets_open=d.get("tickets_open", 0),

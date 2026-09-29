@@ -42,7 +42,7 @@ class FailuresScreen(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(12)
 
-        title = QLabel("Awarie")
+        title = QLabel("Awarie i tickety")
         title.setObjectName("screen-title")
         layout.addWidget(title)
 
@@ -63,6 +63,21 @@ class FailuresScreen(QWidget):
         self.history_label.setStyleSheet("color: #6a6a6a;")
         self.history_label.setWordWrap(True)
         layout.addWidget(self.history_label)
+
+        # Sekcja: Tickety
+        tickets_title = QLabel("🎫 Tickety supportu (auto-rozwiązywane przez pracowników)")
+        tickets_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #9a9a9a; margin-top: 8px;")
+        layout.addWidget(tickets_title)
+
+        self.tickets_summary = QLabel("—")
+        self.tickets_summary.setStyleSheet("color: #d4d4d4; padding: 8px; background: #1f1f1f; border-radius: 4px;")
+        self.tickets_summary.setWordWrap(True)
+        layout.addWidget(self.tickets_summary)
+
+        self.tickets_list = QLabel("—")
+        self.tickets_list.setStyleSheet("color: #9a9a9a; font-size: 12px;")
+        self.tickets_list.setWordWrap(True)
+        layout.addWidget(self.tickets_list)
 
         layout.addStretch()
 
@@ -93,6 +108,30 @@ class FailuresScreen(QWidget):
             self.history_label.setText("\n".join(lines))
         else:
             self.history_label.setText("Brak historii awarii.")
+
+        # Tickety
+        open_tickets = [t for t in self.game.state.tickets if t.status == "open"]
+        resolved_today = [t for t in self.game.state.tickets if t.status == "resolved" and t.resolved_day == self.game.state.day]
+        self.tickets_summary.setText(
+            f"Otwarte: {len(open_tickets)}   "
+            f"Rozwiązane dziś: {len(resolved_today)}   "
+            f"Łącznie: {len(self.game.state.tickets)}"
+        )
+        if open_tickets:
+            TICKET_TYPES = {
+                "support": "🎧 Support",
+                "failure": "🔧 Awareria",
+                "network": "🌐 Sieć",
+                "sla": "🎯 SLA",
+            }
+            lines = []
+            for t in open_tickets[:10]:
+                ttype = TICKET_TYPES.get(t.type, t.type)
+                prio = "!" * t.priority
+                lines.append(f"{prio} {ttype}: {t.description or '(brak opisu)'}")
+            self.tickets_list.setText("\n".join(lines))
+        else:
+            self.tickets_list.setText("Brak otwartych ticketów.")
 
     def _build_failure_card(self, failure) -> QFrame:
         card = QFrame()
