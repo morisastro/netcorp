@@ -1,50 +1,28 @@
 # Changelog
 
-Wszystkie istotne zmiany projektu NetCorp Tycoon będą dokumentowane w tym pliku.
-
-Format oparty na [Keep a Changelog](https://keepachangelog.com/pl/), wersjonowanie [Semantic Versioning](https://semver.org/lang/pl/).
-
-## [0.1.2] - 2026-09-29
+## [0.2.0] - 2026-09-29
 
 ### Dodane
-- Opcja sprzedaży/usuwania serwerów (zwrot 30% kosztu, malejący z wiekiem)
-- System samouczka — 8 kroków prowadzących przez pierwszą grę
-- Samouczek auto-pokazuje się przy nowej grze (można pominąć)
-- Przycisk "Samouczek" w topbarze (do ponownego uruchomienia)
-
-## [0.1.1] - 2026-09-29
-
-### Dodane
-- Link do GitHub (repo, releases, zgłoś problem) w Ustawieniach
-- Sprawdzanie aktualizacji z linkami do pobrania per platforma (Win/Linux/Mac)
-- System wersjonowania (`new_version.py`) — automatyczny bump + tag + CI
-
-### Zmienione
-- CI buduje teraz tylko 3 pliki ZIP (1 na platformę) z poprawną nazwą (bez podwójnego `v`)
-- Powiadomienie o aktualizacji pokazuje rozmiar pliku i bezpośredni link do Windows builda
-- Release zawiera changelog z tego pliku zamiast auto-generowanych commitów
-
-## [0.1.0] - 2026-09-29
-
-### Dodane
-- Pierwsza grywalna wersja gry
-- Menu startowe z wyborem trybów: Sandbox, Kariera, Hardcore
-- 10 ekranów: Przegląd, Infrastruktura, Produkty, Klienci, Awarie, Pracownicy, Marketing, Strona firmy, Finanse, Ustawienia
-- Tury dzienne (1 klik = 1 dzień symulacji) z raportem dziennym
-- Infrastruktura: katalog serwerów (5 modeli × 3 tier jakości), sloty w serwerowni (SVG), zasoby DC (prąd, sieć, chłodzenie)
-- Produkty: WWW, VPS, serwer dedykowany, domena — własne plany z ręcznymi cenami
-- Klienci: agregaty per produkt, churn, czas pobytu 1-7 dni, SLA kary
-- Awarie: 6 typów (dysk, CPU, przegrzanie, zasilanie, sieć, DDoS), RNG z modyfikatorami stanu, wybór akcji
-- Pracownicy: 5 ról (Support, Sysadmin, NetEng, Sales, Marketing), indywidualni z poziomem i pensją
-- Marketing: budżet dzienny, ROI, przyrost klientów
-- Strona firmy: drag & drop builder sekcji z podglądem HTML na żywo
-- Domeny per TLD (.com/.net/.org/.pl/.io/.eu/.dev/.app)
-- Finanse: prosta gotówka, koszty stałe, przychody z subskrypcji
-- Reputacja, kamienie milowe (50/500/2000 klientów)
-- Save/load: multi-slot JSON, autosave dzienny, manualny zapis
-- Update checker: sprawdza GitHub releases przy starcie
-- Ikona aplikacji (PNG → ICO, 16-256px)
-- Licencja CC BY-ND 4.0 (gra darmowa, mody dozwolone)
-- Dark pro-operator UI z animacjami hover i emoji ikonami
-- Build .exe przez PyInstaller + CI (GitHub Actions)
-- Testy logiki core (11/11 pass)
+- Realne przypisywanie klientów do serwerów (ServiceInstance)
+  - VPS/WWW/dedyk zużywają realne CPU/RAM/dysk na konkretnym serwerze
+  - Oversubscription: 1.5× CPU, 1.2× RAM (VPS/WWW)
+  - Dedyk = jeden klient na serwer
+  - Brak serwera = klient nie kupuje + spadek reputacji
+  - Obciążenie serwerów pokazywane w UI na żywo
+- Tickety supportu (auto-rozwiązywane przez pracowników)
+  - Typy: support, failure, network, sla
+  - Priorytet 1-3 (DDoS/zasilanie = wysoki)
+  - Generowane automatycznie przy awariach
+  - Pracownicy rozwiązują wg roli (support/sysadmin/neteng)
+  - Pojemność = poziom × 10 ticketów/dzień
+  - Nierozwiązane tickety = spadek reputacji
+- Rozbudowany system modowania (10 kategorii):
+  - balance (16 stałych), start (cash, reputation), server_models, tlds,
+    products (gotowe plany), failure_types (wagi), marketing, employee,
+    names (imiona, nazwy serwerów)
+- Mod aplikowany przy nowej grze (apply_mods w Game.new_game)
+- Sekcja "Zainstalowane mody" w Ustawieniach z listą i statusem
+- Przykładowy mod demonstrujący wszystkie opcje
+- Przyciski otwierania folderów w Ustawieniach (zapisy, mody, folder gry)
+- Sprzedaż/usuwanie serwerów (zwrot 30% kosztu, malejący z wiekiem)
+- System samouczka (8 kroków, auto-pokaz przy nowej grze)

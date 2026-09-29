@@ -64,6 +64,15 @@ class SettingsScreen(QWidget):
         folders_row.addStretch()
         layout.addLayout(folders_row)
 
+        # Sekcja: zainstalowane mody
+        mods_title = QLabel("🧩 Zainstalowane mody")
+        mods_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #60a5fa; margin-top: 12px;")
+        layout.addWidget(mods_title)
+        self.mods_label = QLabel("—")
+        self.mods_label.setStyleSheet("color: #9a9a9a; padding: 8px; background: #1f1f1f; border-radius: 4px;")
+        self.mods_label.setWordWrap(True)
+        layout.addWidget(self.mods_label)
+
         # Sekcja: aktualizacje
         up_title = QLabel("Aktualizacje")
         up_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #60a5fa; margin-top: 12px;")
@@ -159,7 +168,22 @@ class SettingsScreen(QWidget):
         QMessageBox.information(self, "Dostępna aktualizacja", "\n".join(lines))
 
     def refresh(self) -> None:
-        pass  # ustawienia statyczne
+        # Pokaż zainstalowane mody
+        try:
+            from core.mods import list_mods
+            mods = list_mods()
+            if not mods:
+                self.mods_label.setText("Brak zainstalowanych modów. Dodaj plik .json do folderu mods/.")
+            else:
+                lines = []
+                for m in mods:
+                    status = "✅" if m.get("enabled", True) else "❌"
+                    lines.append(f"{status}  {m['name']} v{m['version']}  ({m['author']})")
+                    if m.get("description"):
+                        lines.append(f"      {m['description']}")
+                self.mods_label.setText("\n".join(lines))
+        except Exception:
+            self.mods_label.setText("Błąd ładowania modów.")
 
     def _open_url(self, url: str) -> None:
         if not url:

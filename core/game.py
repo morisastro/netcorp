@@ -95,7 +95,15 @@ class Game:
 
     @classmethod
     def new_game(cls) -> "Game":
-        return cls()
+        """Tworzy nową grę i aplikuje mody (jeśli są)."""
+        game = cls()
+        # Aplikuj mody przy nowej grze
+        try:
+            from core.mods import apply_mods
+            apply_mods(game.state)
+        except Exception:
+            pass  # mody opcjonalne — błąd nie łamie gry
+        return game
 
     # ---- snapshot dla UI ----
 
