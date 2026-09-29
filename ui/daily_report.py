@@ -43,10 +43,8 @@ class DailyReportDialog(QDialog):
             ("Tickety rozwiązane", f"{report['tickets_resolved']}", "#9a9a9a"),
         ]
 
-        # Klienci którzy nie kupili (brak serwera)
+        # Klienci którzy nie kupili (brak serwera) — pokazani w sekcji ostrzeżenia niżej
         unplaced = report.get("unplaced", 0)
-        if unplaced > 0:
-            rows.append(("⚠ Nie kupili (brak miejsca)", f"{unplaced}", "#facc15"))
 
         for label, value, color in rows:
             line = QLabel(f"{label}: {value}")
@@ -63,6 +61,21 @@ class DailyReportDialog(QDialog):
                 ms_label = QLabel(f"   • {ms}")
                 ms_label.setStyleSheet("color: #facc15;")
                 layout.addWidget(ms_label)
+
+        # Ostrzeżenie: brak serwerów
+        unplaced = report.get("unplaced", 0)
+        if unplaced > 0:
+            layout.addSpacing(8)
+            warn_title = QLabel("⚠️ SERWERY NIEWYSTARCZAJĄCE")
+            warn_title.setStyleSheet("font-weight: bold; color: #f87171; font-size: 16px;")
+            layout.addWidget(warn_title)
+            warn_body = QLabel(
+                f"{unplaced} klientów chciało kupić, ale brak miejsca na serwerach!\n"
+                f"Kup więcej serwerów w Infrastrukturze albo rozbuduj serwerownię (kup sloty)."
+            )
+            warn_body.setStyleSheet("color: #facc15;")
+            warn_body.setWordWrap(True)
+            layout.addWidget(warn_body)
 
         # Nowe awarie
         if report["new_failures"]:

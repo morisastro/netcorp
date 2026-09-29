@@ -125,6 +125,45 @@ class SettingsScreen(QWidget):
         info.setStyleSheet("color: #9a9a9a;")
         layout.addWidget(info)
 
+        # Sekcja: Debug mode
+        debug_title = QLabel("🐛 Debug mode")
+        debug_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #facc15; margin-top: 12px;")
+        layout.addWidget(debug_title)
+        debug_info = QLabel(
+            "Włącz debug mode aby zobaczyć dodatkowe informacje w konsoli\n"
+            "(liczba klientów, usługi, awarie, obciążenie serwerów)."
+        )
+        debug_info.setStyleSheet("color: #9a9a9a;")
+        debug_info.setWordWrap(True)
+        layout.addWidget(debug_info)
+
+        from PySide6.QtWidgets import QCheckBox
+        from app.settings import is_debug, set_debug
+        self.debug_checkbox = QCheckBox("Włącz debug mode (wymaga restartu)")
+        self.debug_checkbox.setChecked(is_debug())
+        self.debug_checkbox.stateChanged.connect(lambda state: set_debug(state == 2))  # 2 = Checked
+        layout.addWidget(self.debug_checkbox)
+
+        # Sekcja: Błędy / Issues
+        bugs_title = QLabel("🐞 Zgłaszanie błędów")
+        bugs_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #f87171; margin-top: 12px;")
+        layout.addWidget(bugs_title)
+        bugs_info = QLabel(
+            "Znalazłeś błąd? Masz propozycję? Zgłoś to na GitHub:\n"
+            "https://github.com/morisastro/netcorp/issues\n\n"
+            "Opisz co się stało, jakie kroki wykonałeś, i screen jeśli możliwe."
+        )
+        bugs_info.setStyleSheet("color: #9a9a9a;")
+        bugs_info.setWordWrap(True)
+        layout.addWidget(bugs_info)
+
+        bugs_row = QHBoxLayout()
+        self.btn_open_issues = QPushButton("🐞  Otwórz GitHub Issues")
+        self.btn_open_issues.clicked.connect(lambda: self._open_url("https://github.com/morisastro/netcorp/issues"))
+        bugs_row.addWidget(self.btn_open_issues)
+        bugs_row.addStretch()
+        layout.addLayout(bugs_row)
+
         layout.addStretch()
 
     def _on_save(self) -> None:

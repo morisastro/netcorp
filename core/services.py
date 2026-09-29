@@ -229,7 +229,10 @@ def churn_services(state: Any, rng: Any) -> int:
     state.services = keep
 
     # Sync z CustomerAggregate (count = liczba aktywnych usług per produkt)
+    # Domeny NIE są services — liczone osobno, nie nadpisujemy ich!
     for cust in state.customers:
+        if cust.product_type == "domain":
+            continue
         cust.count = sum(1 for s in state.services if s.product_type == cust.product_type and s.status == "active")
 
     return churned

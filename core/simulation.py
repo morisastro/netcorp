@@ -13,6 +13,13 @@ from data import balance
 
 def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     """Symuluje jeden dzień gry. Modyfikuje `state` w miejscu. Zwraca raport."""
+    # Debug mode — loguj detale do konsoli
+    try:
+        from app.settings import is_debug
+        debug = is_debug()
+    except Exception:
+        debug = False
+
     income = 0.0
     expenses = 0.0
     new_customers = 0
@@ -127,6 +134,22 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     # ---- Churn usług ----
     churned = svc.churn_services(state, rng)
 
+    # ---- Churn domen (osobno — nie są services) ----
+    for cust in state.customers:
+        if cust.product_type != "domain" or not cust.arrival_days:
+            continue
+        keep_arrivals: list[int] = []
+        for arr_day in cust.arrival_days:
+            age = state.day - arr_day
+            if age >= cust.avg_stay_days:
+                churned += 1
+            elif age >= cust.avg_stay_days - 1 and rng.chance(0.3):
+                churned += 1
+            else:
+                keep_arrivals.append(arr_day)
+        cust.arrival_days = keep_arrivals
+        cust.count = len(cust.arrival_days)
+
     # ---- Przychód z aktywnych usług ----
     income = svc.generate_revenue(state)
 
@@ -172,6 +195,16 @@ def simulate_day(state: Any, rng: Any) -> dict[str, Any]:
     if total >= 2000 and "milestone_second_region" not in state.unlocked_milestones:
         state.unlocked_milestones.append("milestone_second_region")
         milestones.append("Odblokowano: drugi region (2000 klientów)")
+
+    # Debug mode — log do konsoli
+    if debug:
+        import sys
+        active = sum(1 for s in state.services if s.status == "active")
+        print(f"[DEBUG] Dzien {state.day}: cash=${state.cash:.2f} "
+              f"services={active} customers={sum(c.count for c in state.customers)} "
+              f"new={new_customers} churned={churned} unplaced={unplaced} "
+              f"failures={len(new_failures)} tickets={state.tickets_open} "
+              f"debt=${state.debt:.2f}", file=sys.stderr)
 
     return {
         "day": state.day,

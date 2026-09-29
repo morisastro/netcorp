@@ -11,6 +11,37 @@ APP_DISPLAY_NAME = "NetCorp Tycoon"
 # Repo GitHub do sprawdzania aktualizacji
 GITHUB_REPO = "morisastro/netcorp"  # owner/repo
 GITHUB_RELEASES_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+GITHUB_ISSUES_URL = f"https://github.com/{GITHUB_REPO}/issues"
+GITHUB_REPO_URL = f"https://github.com/{GITHUB_REPO}"
+
+# Debug mode — włączane w Ustawieniach (zapisywane w pliku)
+def is_debug() -> bool:
+    """Zwraca True jeśli debug mode włączony."""
+    try:
+        import json
+        path = app_data_dir() / "settings.json"
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                return json.load(f).get("debug", False)
+    except Exception:
+        pass
+    return False
+
+def set_debug(enabled: bool) -> bool:
+    """Włącza/wyłącza debug mode (zapis w settings.json)."""
+    try:
+        import json
+        path = app_data_dir() / "settings.json"
+        data = {}
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                data = json.load(f)
+        data["debug"] = enabled
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(data, f)
+        return True
+    except Exception:
+        return False
 
 
 def save_dir() -> Path:
