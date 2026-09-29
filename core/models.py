@@ -274,6 +274,10 @@ class GameState:
     unlocked_milestones: list[str] = field(default_factory=list)
     rng_seed: int = 0
     version: str = "0.1.0"
+    # Tryb gry (sandbox | career | hardcore)
+    game_mode: str = "sandbox"
+    # Modyfikator awaryjności (z trybu gry, domyślnie 1.0)
+    failure_multiplier: float = 1.0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -294,6 +298,8 @@ class GameState:
             "unlocked_milestones": list(self.unlocked_milestones),
             "rng_seed": self.rng_seed,
             "version": self.version,
+            "game_mode": self.game_mode,
+            "failure_multiplier": self.failure_multiplier,
         }
 
     @classmethod
@@ -316,4 +322,6 @@ class GameState:
             unlocked_milestones=list(d.get("unlocked_milestones", [])),
             rng_seed=d.get("rng_seed", 0),
             version=d.get("version", "0.1.0"),
+            game_mode=d.get("game_mode", "sandbox"),
+            failure_multiplier=d.get("failure_multiplier", 1.0),
         )

@@ -203,6 +203,8 @@ def _generate_failures(state: Any, rng: Any) -> list:
             cooling_mult = balance.FAILURE_MOD_HIGH_TEMP
 
         p_failure = base * tier_mult * age_mult * load_mult * ram_mult * cooling_mult
+        # Modyfikator z trybu gry (sandbox/career/hardcore)
+        p_failure *= getattr(state, "failure_multiplier", 1.0)
 
         if rng.chance(p_failure):
             # Wybierz typ awarii wg wag

@@ -31,6 +31,34 @@ from app.update_checker import check_for_update
 from persistence import save_load
 
 
+GAME_MODES = [
+    {
+        "id": "sandbox",
+        "name": "Sandbox",
+        "desc": "Tryb otwarty — buduj firmę bez limitów, bez przegrania.",
+        "cash": 5000.0,
+        "reputation": 50.0,
+        "failure_mult": 1.0,
+    },
+    {
+        "id": "career",
+        "name": "Kariera",
+        "desc": "Tryb z bankructwem — od garażu do providera, jedyny fail = brak gotówki.",
+        "cash": 3000.0,
+        "reputation": 40.0,
+        "failure_mult": 1.2,
+    },
+    {
+        "id": "hardcore",
+        "name": "Hardcore",
+        "desc": "Minimalny kapitał, wyższa awaryjność, szybsze tempo. Dla weteranów.",
+        "cash": 1500.0,
+        "reputation": 30.0,
+        "failure_mult": 1.8,
+    },
+]
+
+
 class MainMenuWindow(QWidget):
     """Menu startowe. Emituje sygnał gdy gracz wybierze partię do załadowania."""
 
@@ -85,7 +113,7 @@ class MainMenuWindow(QWidget):
         ver.setStyleSheet("color: #6a6a6a; padding: 16px 24px; font-size: 11px;")
         llayout.addWidget(ver)
 
-        self.btn_new.clicked.connect(self._on_new)
+        self.btn_new.clicked.connect(self._on_show_modes)
         self.btn_load.clicked.connect(self._on_show_load)
         self.btn_settings.clicked.connect(self._on_show_settings)
         self.btn_exit.clicked.connect(self.close)
@@ -98,6 +126,7 @@ class MainMenuWindow(QWidget):
 
         self.stack = QStackedWidget()
         self.stack.addWidget(self._build_welcome())
+        self.stack.addWidget(self._build_modes_panel())
         self.stack.addWidget(self._build_load_panel())
         self.stack.addWidget(self._build_settings_panel())
         rlayout.addWidget(self.stack)
@@ -139,6 +168,61 @@ class MainMenuWindow(QWidget):
         self.update_banner.setVisible(False)
         layout.addWidget(self.update_banner)
 
+        return w
+
+    def _build_modes_panel(self) -> QWidget:
+        w = QWidget()
+        layout = QVBoxLayout(w)
+        layout.setContentsMargins(40, 40, 40, 40)
+        layout.setSpacing(12)
+
+        title = QLabel("Wybierz tryb gry")
+        title.setObjectName("screen-title")
+        layout.addWidget(title)
+
+        hint = QLabel("Wybierz tryb, który określa kapitał startowy i trudność:")
+        hint.setStyleSheet("color: #6a6a6a;")
+        layout.addWidget(hint)
+
+        from PySide6.QtWidgets import QFrame, QPushButton as QP
+        self.mode_buttons: dict[str, QP] = {}
+        for mode in GAME_MODES:
+            card = QFrame()
+            card.setObjectName("card")
+            card.setStyleSheet(
+                "QFrame#card { background-color: #1f1f1f; border: 1px solid #3a3a3a; border-radius: 4px; }"
+                "QFrame#card:hover { border-color: #2563eb; }"
+            )
+            c_layout = QVBoxLayout(card)
+            c_layout.setContentsMargins(16, 12, 16, 12)
+            c_layout.setSpacing(4)
+
+            name_lbl = QLabel(f"🎯 {mode['name']}")
+            name_lbl.setStyleSheet("color: #60a5fa; font-size: 16px; font-weight: bold;")
+            c_layout.addWidget(name_lbl)
+
+            desc_lbl = QLabel(mode["desc"])
+            desc_lbl.setStyleSheet("color: #9a9a9a;")
+            desc_lbl.setWordWrap(True)
+            c_layout.addWidget(desc_lbl)
+
+            stats_lbl = QLabel(
+                f"Kapitał startowy: ${mode['cash']:,.0f}    "
+                f"Reputacja: {mode['reputation']:.0f}/100    "
+                f"Awaryjność: ×{mode['failure_mult']}"
+            )
+            stats_lbl.setStyleSheet("color: #facc15; font-size: 12px;")
+            c_layout.addWidget(stats_lbl)
+
+            btn = QP("Rozpocznij ten tryb →")
+            btn.setObjectName("primary")
+            btn.clicked.connect(lambda checked=False, m=mode: self._on_start_mode(m))
+            c_layout.addWidget(btn)
+
+            self.mode_buttons[mode["id"]] = btn
+            layout.addWidget(card)
+
+        layout.addStretch()
         return w
 
     def _build_load_panel(self) -> QWidget:
@@ -251,9 +335,15 @@ class MainMenuWindow(QWidget):
         super().showEvent(event)
         self._refresh_saves()
 
-    def _on_new(self) -> None:
+    def _on_start_mode(self, mode: dict) -> None:
         from core.game import Game
         game = Game.new_game()
+        # Dostosuj do trybu
+        game.state.cash = mode["cash"]
+        game.state.reputation = mode["reputation"]
+        # Zapisz modyfikator awaryjności w stanie (do użycia w symulacji)
+        game.state.game_mode = mode["id"]
+        game.state.failure_multiplier = mode["failure_mult"]
         # Autosave nowej gry
         try:
             save_load.autosave(game)
@@ -262,12 +352,15 @@ class MainMenuWindow(QWidget):
         self.on_start_game(game)
         self.close()
 
-    def _on_show_load(self) -> None:
+    def _on_show_modes(self) -> None:
         self.stack.setCurrentIndex(1)
+
+    def _on_show_load(self) -> None:
+        self.stack.setCurrentIndex(2)
         self._refresh_saves()
 
     def _on_show_settings(self) -> None:
-        self.stack.setCurrentIndex(2)
+        self.stack.setCurrentIndex(3)
 
     def _refresh_saves(self) -> None:
         self.saves_list.clear()

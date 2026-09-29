@@ -176,14 +176,16 @@ QTableWidget {
 QHeaderView::section {
     background-color: #2a2a2a;
     color: #9a9a9a;
-    padding: 6px 10px;
+    padding: 10px 12px;
     border: none;
     border-bottom: 1px solid #333333;
     font-weight: bold;
+    font-size: 13px;
 }
 
 QTableWidget::item {
-    padding: 6px 10px;
+    padding: 10px 12px;
+    font-size: 13px;
 }
 
 /* Karty / panele */

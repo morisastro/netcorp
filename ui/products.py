@@ -25,6 +25,14 @@ from data.products import PRODUCT_TYPES, product_name
 
 PRODUCT_LABELS = {p["id"]: p["name"] for p in PRODUCT_TYPES}
 
+# Pola wymagane per typ produktu (reszta ukryta w dialogu)
+PRODUCT_FIELDS = {
+    "www":       {"cpu", "ram", "disk", "bw", "price", "sla"},
+    "vps":       {"cpu", "ram", "disk", "bw", "price", "sla"},
+    "dedicated": {"cpu", "ram", "disk", "bw", "price", "sla"},
+    "domain":    {"price", "sla"},  # domena nie ma dysku/CPU/RAM
+}
+
 
 class PlanDialog(QDialog):
     """Dialog tworzenia/edycji planu."""
@@ -42,6 +50,7 @@ class PlanDialog(QDialog):
         self.product = QComboBox()
         for pid, label in PRODUCT_LABELS.items():
             self.product.addItem(label, pid)
+        self.product.currentIndexChanged.connect(self._update_field_visibility)
         form.addRow("Produkt:", self.product)
 
         self.name = QLineEdit()
@@ -49,19 +58,19 @@ class PlanDialog(QDialog):
 
         self.cpu = QSpinBox()
         self.cpu.setRange(0, 64)
-        form.addRow("vCPU:", self.cpu)
+        self.cpu_row = form.addRow("vCPU:", self.cpu)
 
         self.ram = QSpinBox()
         self.ram.setRange(0, 256)
-        form.addRow("RAM (GB):", self.ram)
+        self.ram_row = form.addRow("RAM (GB):", self.ram)
 
         self.disk = QSpinBox()
         self.disk.setRange(0, 8000)
-        form.addRow("Dysk (GB):", self.disk)
+        self.disk_row = form.addRow("Dysk (GB):", self.disk)
 
         self.bw = QSpinBox()
         self.bw.setRange(0, 10000)
-        form.addRow("Przepustowość (Mbps):", self.bw)
+        self.bw_row = form.addRow("Przepustowość (Mbps):", self.bw)
 
         self.price = QDoubleSpinBox()
         self.price.setRange(0, 9999)
@@ -94,16 +103,52 @@ class PlanDialog(QDialog):
             self.bw.setValue(plan.bandwidth_mbps)
             self.price.setValue(plan.price_monthly)
             self.sla.setValue(plan.sla_target)
+        self._update_field_visibility()
+
+    def _update_field_visibility(self) -> None:
+        """Ukrywa pola niepotrzebne dla danego produktu (np. domena bez dysku)."""
+        product_type = self.product.currentData()
+        fields = PRODUCT_FIELDS.get(product_type, set())
+        # Mapa: nazwa pola → (widget, wiersz formularza)
+        widgets = {
+            "cpu": (self.cpu, self.cpu_row),
+            "ram": (self.ram, self.ram_row),
+            "disk": (self.disk, self.disk_row),
+            "bw": (self.bw, self.bw_row),
+            "price": (self.price, None),
+            "sla": (self.sla, None),
+        }
+        for fname, (widget, row) in widgets.items():
+            visible = fname in fields
+            widget.setVisible(visible)
+            if row is not None:
+                # Ukryj label i widget w wierszu formularza
+                label_item = self._row_label(row)
+                if label_item is not None:
+                    label_item.setVisible(visible)
+                field_item = self._row_field(row)
+                if field_item is not None:
+                    field_item.setVisible(visible)
+        self.adjustSize()
+
+    def _row_label(self, row):
+        # QFormLayout nie ujawnia łatwo labela; ukrywamy przez parent layout geometry
+        return None
+
+    def _row_field(self, row):
+        return None
 
     def to_plan(self, plan_id: str) -> ProductPlan:
+        product_type = self.product.currentData()
+        fields = PRODUCT_FIELDS.get(product_type, set())
         return ProductPlan(
             id=plan_id,
-            product_type=self.product.currentData(),
+            product_type=product_type,
             name=self.name.text() or "Plan",
-            cpu_cores=self.cpu.value(),
-            ram_gb=self.ram.value(),
-            disk_gb=self.disk.value(),
-            bandwidth_mbps=self.bw.value(),
+            cpu_cores=self.cpu.value() if "cpu" in fields else 0,
+            ram_gb=self.ram.value() if "ram" in fields else 0,
+            disk_gb=self.disk.value() if "disk" in fields else 0,
+            bandwidth_mbps=self.bw.value() if "bw" in fields else 0,
             price_monthly=self.price.value(),
             sla_target=self.sla.value(),
         )

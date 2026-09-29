@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 
 from core.game import Game
 from core.models import WebsiteBlock
+from ui.website_renderer import WebsiteRenderer
 
 # Dostępne bloki do przeciągania
 BLOCK_TYPES = [
@@ -162,6 +163,13 @@ class WebsiteScreen(QWidget):
         page_title.setStyleSheet("color: #60a5fa; font-weight: bold; padding: 8px;")
         self.page_layout.addWidget(page_title)
 
+        # Kontener na bloki (osobny widget — łatwiejsze czyszczenie)
+        self.blocks_container = QWidget()
+        self.blocks_layout = QVBoxLayout(self.blocks_container)
+        self.blocks_layout.setContentsMargins(0, 0, 0, 0)
+        self.blocks_layout.setSpacing(6)
+        self.page_layout.addWidget(self.blocks_container)
+
         self.empty_label = QLabel("Upuść bloki tutaj, aby zbudować stronę firmy.")
         self.empty_label.setStyleSheet("color: #6a6a6a; padding: 24px;")
         self.empty_label.setAlignment(Qt.AlignCenter)
@@ -170,12 +178,17 @@ class WebsiteScreen(QWidget):
         self.page_layout.addStretch()
         cols.addWidget(self.page_frame, 2)
 
+        # Trzecia kolumna: faktyczny podgląd strony
+        self.renderer = WebsiteRenderer()
+        self.renderer.render(self.game.state.website.blocks)
+        cols.addWidget(self.renderer, 2)
+
         layout.addLayout(cols, 1)
 
     def refresh(self) -> None:
-        # Wyczyść listę bloków (zostaw tytuł i empty_label)
-        while self.page_layout.count() > 3:  # tytuł + empty_label + stretch
-            item = self.page_layout.takeAt(1)
+        # Wyczyść kontener bloków
+        while self.blocks_layout.count():
+            item = self.blocks_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
@@ -186,14 +199,16 @@ class WebsiteScreen(QWidget):
             sorted_blocks = sorted(blocks, key=lambda b: b.order)
             for block in sorted_blocks:
                 w = PlacedBlockWidget(block, on_remove=self._on_remove_block)
-                # Wstaw przed stretch
-                self.page_layout.insertWidget(self.page_layout.count() - 1, w)
+                self.blocks_layout.addWidget(w)
         else:
             self.empty_label.setVisible(True)
 
         # Bonus
         bonus = self.game.state.website.conversion_bonus()
         self.bonus_label.setText(f"Bonus do konwersji: {bonus*100:.0f}%")
+        # Odśwież podgląd strony
+        if hasattr(self, "renderer"):
+            self.renderer.render(self.game.state.website.blocks)
 
     def _on_remove_block(self, block: WebsiteBlock) -> None:
         if block in self.game.state.website.blocks:
@@ -209,3 +224,6 @@ class WebsiteScreen(QWidget):
         block = WebsiteBlock(block_type=block_type, order=order, content={})
         self.game.state.website.blocks.append(block)
         self.refresh()
+        # Odśwież podgląd strony
+        if hasattr(self, "renderer"):
+            self.renderer.render(self.game.state.website.blocks)
