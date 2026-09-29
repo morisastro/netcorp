@@ -71,3 +71,10 @@ POWER_PRICE_PER_KWH = 0.15
 NETWORK_PRICE_PER_MBPS_DAILY = 0.05
 # Licencje (stałe dzienne)
 LICENSE_DAILY = 5.0
+
+# ---- Rozbudowa serwerowni ----
+# Cena zakupu slotu rośnie z liczbą slotów: base + (slots_total × step)
+SLOT_BUY_BASE_PRICE = 500.0    # pierwszy slot od $500
+SLOT_BUY_STEP = 100.0          # każdy kolejny slot +$100
+# Pojemność prądu dodawana per slot (kW)
+SLOT_POWER_KW = 1.5

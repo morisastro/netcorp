@@ -78,9 +78,14 @@ class InfrastructureScreen(QWidget):
         self.rack_svg.setMinimumHeight(280)
         layout.addWidget(self.rack_svg, 1)
 
-        # Przycisk kupna
+        # Przyciski: kup serwer + kup slot
         btn_row = QHBoxLayout()
-        self.btn_buy = QPushButton("+ Kup serwer")
+        self.btn_buy_slot = QPushButton("➕ Kup slot")
+        self.btn_buy_slot.setToolTip("Rozbuduj serwerownię — dodatkowy slot na serwer")
+        self.btn_buy_slot.clicked.connect(self._on_buy_slot)
+        btn_row.addWidget(self.btn_buy_slot)
+
+        self.btn_buy = QPushButton("🖥️ Kup serwer")
         self.btn_buy.setObjectName("primary")
         self.btn_buy.clicked.connect(self._on_buy_server)
         btn_row.addWidget(self.btn_buy)
@@ -347,6 +352,43 @@ class InfrastructureScreen(QWidget):
 
         parts.append("</svg>")
         return "\n".join(parts)
+
+    def _slot_price(self, region: Any) -> float:
+        """Cena zakupu kolejnego slotu (rośnie z liczbą slotów)."""
+        from data import balance
+        return balance.SLOT_BUY_BASE_PRICE + region.slots_total * balance.SLOT_BUY_STEP
+
+    def _on_buy_slot(self) -> None:
+        """Kupuje dodatkowy slot w serwerowni."""
+        if not self.game.state.regions:
+            return
+        region = self.game.state.regions[0]
+        price = self._slot_price(region)
+        from PySide6.QtWidgets import QMessageBox
+        reply = QMessageBox.question(
+            self, "Kup slot",
+            f"Kupić dodatkowy slot w '{region.name}'?\n"
+            f"Cena: ${price:.2f}\n"
+            f"Aktualnie: {region.slots_total} slotów ({region.slots_used} zajętych)\n"
+            f"Po zakupie: {region.slots_total + 1} slotów\n"
+            f"Gotówka: ${self.game.state.cash:.2f}",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+        if reply != QMessageBox.Yes:
+            return
+        if self.game.state.cash < price:
+            QMessageBox.warning(self, "Brak środków", f"Potrzeba ${price:.2f}, masz ${self.game.state.cash:.2f}.")
+            return
+        self.game.state.cash -= price
+        region.slots_total += 1
+        from data import balance
+        region.power_kw_total += balance.SLOT_POWER_KW
+        QMessageBox.information(
+            self, "Slot kupiony",
+            f"Serwerownia rozbudowana do {region.slots_total} slotów.\n"
+            f"Pojemność prądu: +{balance.SLOT_POWER_KW} kW (teraz {region.power_kw_total} kW)."
+        )
+        self.refresh()
 
     def _on_buy_server(self) -> None:
         dlg = BuyServerDialog(self.game, parent=self)
